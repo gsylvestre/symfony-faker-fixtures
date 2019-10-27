@@ -78,7 +78,7 @@ class FakerFixturesGeneratorCommand extends AbstractMaker
                 null,
                 InputOption::VALUE_NONE,
                 'Destroy previous faker fixtures?'
-            );
+            )
         ;
     }
 
