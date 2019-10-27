@@ -79,6 +79,13 @@ class FakerFixturesGeneratorCommand extends AbstractMaker
                 InputOption::VALUE_NONE,
                 'Destroy previous faker fixtures?'
             )
+            ->addOption(
+                'locale',
+                null,
+                InputOption::VALUE_OPTIONAL,
+                'Faker locale?',
+                'en_US'
+            )
         ;
     }
 
@@ -98,6 +105,8 @@ class FakerFixturesGeneratorCommand extends AbstractMaker
             $this->deletePreviousFixtures($io);
         }
 
+        $fakerLocale = $input->getOption('locale');
+
         $em = $this->entityHelper->getRegistry()->getManager();
 
         //check for schema validation errors
@@ -112,7 +121,7 @@ class FakerFixturesGeneratorCommand extends AbstractMaker
 
         foreach ($metas as $meta) {
             $entityFullName = $meta->getName();
-            $this->generateEntityFixtureClass($entityFullName, $input, $io, $generator);
+            $this->generateEntityFixtureClass($entityFullName, $input, $io, $generator, $fakerLocale);
         }
 
         $this->generateMetaFixtureClass($metas, $generator);
@@ -175,7 +184,7 @@ class FakerFixturesGeneratorCommand extends AbstractMaker
      * @throws \ReflectionException
      * @return void
      */
-    private function generateEntityFixtureClass(string $entityFullName, InputInterface $input, ConsoleStyle $io, Generator $generator): void
+    private function generateEntityFixtureClass(string $entityFullName, InputInterface $input, ConsoleStyle $io, Generator $generator, string $fakerLocale): void
     {
         //short class name, useful for variables in command...
         $boundClass = (new \ReflectionClass($entityFullName))->getShortName();
@@ -216,6 +225,7 @@ class FakerFixturesGeneratorCommand extends AbstractMaker
                 'table_name' => $classMetaData->getTableName(),
                 'pivot_table_names' => $this->getPivotTableNames($classMetaData),
                 'fields' => $fieldDataExtractor->getFieldsData($classMetaData),
+                'faker_locale' => $fakerLocale,
             ]
         );
 
