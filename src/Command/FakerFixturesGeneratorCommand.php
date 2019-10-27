@@ -22,6 +22,8 @@ use Symfony\Component\Console\Question\Question;
 use Symfony\Bundle\MakerBundle\Validator;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\SplFileInfo;
+use Doctrine\ORM\Tools\SchemaValidator;
+
 
 /**
  * Class FakerFixturesGeneratorCommand
@@ -97,6 +99,14 @@ class FakerFixturesGeneratorCommand extends AbstractMaker
         }
 
         $em = $this->entityHelper->getRegistry()->getManager();
+
+        //check for schema validation errors
+        $schemaValidator = new SchemaValidator($em);
+        $schemaValidationErrors = $schemaValidator->validateMapping();
+        if (count($schemaValidationErrors) > 0) {
+            $io->error("You have errors in your entities! Please run 'php bin/console doctrine:schema:validate' to find/fix them first.");
+            die("See you later.");
+        }
 
         $metas = $em->getMetadataFactory()->getAllMetadata();
 
