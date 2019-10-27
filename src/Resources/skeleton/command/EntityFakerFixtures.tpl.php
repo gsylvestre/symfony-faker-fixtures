@@ -93,14 +93,17 @@ endforeach
 foreach($fields as $field):
     if ($field['isAssoc']):
         $methodName = sprintf($field['fakerMethod'], '$all'.$field['assocShortClassName'].'Entities');
-
         if (!empty($field['adder'])):
 ?>
-
-            $numberOf<?= $field['fieldName'] ?> = $this->faker->numberBetween($min = 0, $max = 5);
-            for($n = 0; $n < $numberOf<?= $field['fieldName'] ?>; $n++){
+            /*
+            uncomment below to add more than one
+            (you might need to increase the total number of <?= $field['fieldName'] ?> to load in LoadAllFixturesCommand.php
+            */
+            //$numberOf<?= $field['fieldName'] ?> = $this->faker->numberBetween($min = 0, $max = 5);
+            //for($n = 0; $n < $numberOf<?= $field['fieldName'] ?>; $n++){
                 <?= $var ?>-><?= $field['adder'] ?>($this->faker-><?= $methodName ?>);
-            }
+            //}
+
 <?php
         elseif (!empty($field['setter'])):
 ?>
