@@ -1,10 +1,19 @@
 # Faker Fixtures Maker for Symfony
 
-This bundle allows fast generation of realistic fake datas for your database, in the `make` style that we love. Huge thanks to the wonderfull [Faker library](https://github.com/fzaninotto/Faker/).
+This bundle allows fast generation of realistic fake datas for your database, in the `make` style that we love.  
+Huge thanks to the wonderfull [Faker library](https://github.com/fzaninotto/Faker/).
+
+#### Main features
+
+- Faker method selection based on entities attributes
+- Handling of ManyToMany, ManyToOne, OneToMany and OneToOne association
+- Fixtures order based on association dependencies
+- Generation of standalone commands for each of your entities
 
 Main requirements
 ============
-If you are using the symfony/website-skeleton, you are good to go. Else:
+If you are using the _symfony/website-skeleton_, you are good to go.  
+Else:
 - [Symfony Framework](https://github.com/symfony/symfony) >= 3.4
 - [Doctrine ORM](https://github.com/doctrine/orm) >= 2.3
 - [Symfony Maker Bundle](https://github.com/symfony/maker-bundle)
@@ -49,7 +58,7 @@ $ php bin/console make:faker-fixtures --delete-previous
 ```
 Be aware that *you will lose all changes* made to your fixtures commands!
 
-### Running only one entity fixture?
+### Running only one fixture?
 Each entity fixture is a seperate command that you can run with:
 ```console
 $ php bin/console app:fixtures:entityName 50
@@ -58,7 +67,7 @@ Replace *entityName* with your entity name, and 50 with the number of rows to cr
 
 You can always find the command to run in each fixture file.
 
-Installation for applications that don't use Symfony Flex
+Installation without Symfony Flex
 ----------------------------------------
 
 ### Step 1: Download the Bundle
