@@ -3,7 +3,7 @@
 This bundle allows fast generation of realistic fake datas for your database, in the `make` style that we love.  
 Huge thanks to the wonderfull [Faker library](https://github.com/fzaninotto/Faker/).
 
-#### Main features
+### Main features
 
 - Faker method selection based on entities attributes
 - Handling of ManyToMany, ManyToOne, OneToMany and OneToOne association
@@ -51,7 +51,7 @@ If needed (and it should), edit the generated commands:
 1. `LoadAllFixturesCommand.php` to adapt the number of entities to generate or the order
 2. All other fixtures files to adapt the Faker methods used and/or the logic
 
-### Start over ?
+### Start over?
 If you ever need to regenerates all your fixtures, you can do so by running: 
 ```console
 $ php bin/console make:faker-fixtures --delete-previous
