@@ -1,6 +1,7 @@
 {
     "name": "gsylvestre/symfony-faker-fixtures",
     "type": "symfony-bundle",
+    "description": "Fast generation of realistic fake datas for your database. Symfony/Doctrine/Faker/Make super combo.",
     "homepage": "https://github.com/gsylvestre/symfony-faker-fixtures",
     "require": {
         "php": "^7.0.8",
