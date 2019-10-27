@@ -1,0 +1,33 @@
+{
+    "name": "gsylvestre/symfony-faker-fixtures",
+    "type": "symfony-bundle",
+    "homepage": "https://github.com/gsylvestre/symfony-faker-fixtures",
+    "require": {
+        "php": "^7.0.8",
+        "fzaninotto/faker": "1.*",
+        "symfony/config": "^3.4|^4.0|^5.0",
+        "symfony/console": "^3.4|^4.0|^5.0",
+        "symfony/filesystem": "^3.4|^4.0|^5.0",
+        "symfony/finder": "^3.4|^4.0|^5.0",
+        "symfony/framework-bundle": "^3.4|^4.0|^5.0",
+        "symfony/http-kernel": "^3.4|^4.0|^5.0",
+        "symfony/maker-bundle": "^1.14",
+        "symfony/orm-pack": "^1.0"
+    },
+    "require-dev": {
+        "doctrine/doctrine-bundle": "^1.8|^2.0",
+        "doctrine/orm": "^2.3"
+    },
+    "version": "1.0.0",
+    "minimum-stability": "stable",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Guillaume Sylvestre",
+            "email": "gsylvestre@gmail.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": { "FakerFixtures\\": "src/" }
+    }
+}
