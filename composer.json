@@ -14,10 +14,6 @@
         "symfony/maker-bundle": "^1.14",
         "symfony/orm-pack": "^1.0"
     },
-    "require-dev": {
-        "doctrine/doctrine-bundle": "^1.8|^2.0",
-        "doctrine/orm": "^2.3"
-    },
     "minimum-stability": "stable",
     "license": "MIT",
     "authors": [
