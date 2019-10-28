@@ -73,7 +73,7 @@ class MethodChooser
                 $method = "unique()->$method";
             }
             if(!empty($fieldMetaData['joinColumns'][0]['nullable'])){
-                $method = 'optional($chancesOfValue = 0.5)->' . $method;
+                $method = 'optional($chancesOfValue = 0.5, $default = null)->' . $method;
             }
         }
 
@@ -83,7 +83,7 @@ class MethodChooser
                 $method = "unique()->$method";
             }
             if ($fieldMetaData['nullable']) {
-                $method = 'optional($chancesOfValue = 0.5)->' . $method;
+                $method = 'optional($chancesOfValue = 0.5, $default = null)->' . $method;
             }
         }
 
