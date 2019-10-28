@@ -72,7 +72,7 @@ class FieldDataExtractor
      */
     private function guessGetterName(string $className, string $fieldName):? string
     {
-        $method = "get" . ucfirst($fieldName);
+        $method = "get" . $this->snakeToUpperCamelCase($fieldName);
         return (method_exists($className, $method)) ? $method : null;
     }
 
@@ -82,7 +82,7 @@ class FieldDataExtractor
      */
     private function guessSetterName(string $className, string $fieldName):? string
     {
-        $method = "set" . ucfirst($fieldName);
+        $method = "set" . $this->snakeToUpperCamelCase($fieldName);
         return (method_exists($className, $method)) ? $method : null;
     }
 
@@ -92,7 +92,7 @@ class FieldDataExtractor
      */
     private function guessAdderName(string $className, string $fieldName):? string
     {
-        $method = "add" . ucfirst($fieldName);
+        $method = "add" . $this->snakeToUpperCamelCase($fieldName);
 
         if (method_exists($className, $method)){
             return $method;
@@ -104,5 +104,10 @@ class FieldDataExtractor
         }
 
         return null;
+    }
+
+    private function snakeToUpperCamelCase(string $string): string
+    {
+        return str_ireplace("_", "", ucwords($string, "_"));
     }
 }

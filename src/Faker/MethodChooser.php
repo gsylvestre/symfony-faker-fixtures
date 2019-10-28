@@ -159,10 +159,10 @@ class MethodChooser
             $fieldMetaData['length'] = 255;
         }
 
-        if (in_array($fieldName, ['curr', 'currency', 'currencycode'])){
+        if (FakerMethodAliases::match($fieldName, 'currencyCode')){
             return 'currencyCode';
         }
-        if (in_array($fieldName, ['zip', 'postalcode', 'postal_code', 'postcode', 'post_code'])){
+        if (FakerMethodAliases::match($fieldName, 'postcode')){
             return 'postcode';
         }
         if($fieldMetaData['length'] <= 5){
@@ -171,31 +171,31 @@ class MethodChooser
         if($fieldMetaData['length'] <= 9){
             return 'word';
         }
-        if (in_array($fieldName, ['email', 'mail', 'email_address', 'mail_address'])){
+        if (FakerMethodAliases::match($fieldName, 'email')){
             return 'email';
         }
-        if (in_array($fieldName, ['firstname', 'first_name'])){
+        if (FakerMethodAliases::match($fieldName, 'firstName')){
             return 'firstName';
         }
-        if (in_array($fieldName, ['lastname', 'last_name'])){
+        if (FakerMethodAliases::match($fieldName, 'lastName')){
             return 'lastName';
         }
         if ($entityName === 'user' && $fieldName === 'name'){
             return 'lastName';
         }
-        if (in_array($fieldName, ['username', 'user_name'])){
+        if (FakerMethodAliases::match($fieldName, 'userName')){
             return 'userName';
         }
-        if (in_array($fieldName, ['country', 'countrycode', 'country_code'])){
+        if (FakerMethodAliases::match($fieldName, 'countryCode')){
             return 'countryCode';
         }
         if ($fieldMetaData['entityName'] === 'country' && $fieldName === 'code'){
             return 'countryCode';
         }
-        if (in_array($fieldName, ['street', 'streetname', 'street_name'])){
-            return 'streetName';
+        if (FakerMethodAliases::match($fieldName, 'firstName')){
+            return 'firstName';
         }
-        if (in_array($fieldName, ['streetaddress', 'street_address'])){
+        if (FakerMethodAliases::match($fieldName, 'streetAddress')){
             return 'streetAddress';
         }
         if (in_array($fieldName, $this->fakerMethods)){
