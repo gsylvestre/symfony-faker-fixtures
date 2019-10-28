@@ -161,6 +161,12 @@ class MethodChooser
             $fieldMetaData['length'] = 255;
         }
 
+        if (in_array($fieldName, ['curr', 'currency', 'currencycode'])){
+            return 'currencyCode';
+        }
+        if (in_array($fieldName, ['zip', 'postalcode', 'postal_code', 'postcode', 'post_code'])){
+            return 'postcode';
+        }
         if($fieldMetaData['length'] <= 5){
             return 'randomLetter';
         }
@@ -182,17 +188,17 @@ class MethodChooser
         if (in_array($fieldName, ['username', 'user_name'])){
             return 'userName';
         }
-        if (in_array($fieldName, ['curr', 'currency', 'currencycode'])){
-            return 'currencyCode';
-        }
         if (in_array($fieldName, ['country', 'countrycode', 'country_code'])){
             return 'countryCode';
         }
-        if (in_array($fieldName, ['zip', 'postalcode', 'postal_code', 'postcode', 'post_code'])){
-            return 'postcode';
-        }
         if ($fieldMetaData['entityName'] === 'country' && $fieldName === 'code'){
             return 'countryCode';
+        }
+        if (in_array($fieldName, ['street', 'streetname', 'street_name'])){
+            return 'streetName';
+        }
+        if (in_array($fieldName, ['streetaddress', 'street_address'])){
+            return 'streetAddress';
         }
         if (in_array($fieldName, $this->fakerMethods)){
             return $fieldName . '()';
