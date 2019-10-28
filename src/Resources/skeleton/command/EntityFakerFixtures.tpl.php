@@ -1,5 +1,5 @@
 <?= "<?php\n"; ?>
-
+//coucou
 namespace <?= $namespace; ?>;
 
 use Symfony\Component\Console\Command\Command;
@@ -99,7 +99,7 @@ foreach($fields as $field):
 <?php elseif(empty($field['fakerMethod'])): ?>
 <?php if ($security_user_class && $field['setter'] === "setRoles"): ?>
             //roles
-            <?= $var ?>-><?= $field['setter'] ?>($this->faker->randomElement(["ROLE_USER", "ROLE_ADMIN"]));
+            <?= $var ?>-><?= $field['setter'] ?>([$this->faker->randomElement(["ROLE_USER", "ROLE_ADMIN"])]);
 <?php else: ?>
             //no faker method found!
             //<?= $var ?>-><?= $field['setter'] ?>($this->faker-><?= $field['fakerMethod'] ?>);
