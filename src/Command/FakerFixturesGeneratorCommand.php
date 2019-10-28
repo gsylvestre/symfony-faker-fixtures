@@ -13,7 +13,9 @@ use Symfony\Bundle\MakerBundle\FileManager;
 use Symfony\Bundle\MakerBundle\Generator;
 use Symfony\Bundle\MakerBundle\InputConfiguration;
 use Symfony\Bundle\MakerBundle\Maker\AbstractMaker;
+use Symfony\Bundle\MakerBundle\Security\InteractiveSecurityHelper;
 use Symfony\Bundle\MakerBundle\Str;
+use Symfony\Bundle\MakerBundle\Util\YamlSourceManipulator;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -215,9 +217,26 @@ class FakerFixturesGeneratorCommand extends AbstractMaker
         //helps get infos about each field
         $fieldDataExtractor = new FieldDataExtractor();
 
+        $isUserEntityClass = false;
+
+        if ($this->fileManager->fileExists($path = 'config/packages/security.yaml')) {
+            $manipulator = new YamlSourceManipulator($this->fileManager->getFileContents($path));
+            $securityData = $manipulator->getData();
+            $providersData = $securityData['security']['providers'] ?? [];
+            if (1 === \count($providersData) && isset(current($providersData)['entity'])) {
+                $entityProvider = current($providersData);
+                $userClass = $entityProvider['entity']['class'];
+                dump($userClass);
+                dump($entityFullName === $userClass);
+                die();
+            }
+        }
+
+
+
         $generator->generateClass(
             $commandClassNameDetails->getFullName(),
-            self::PATH_TO_SKELETONS . 'EntityFakerFixtures.tpl.php',
+            self::PATH_TO_SKELETONS . "EntityFakerFixtures.tpl.php",
             [
                 'command_name' => $commandName,
                 'bound_class' => $boundClass,
@@ -226,6 +245,7 @@ class FakerFixturesGeneratorCommand extends AbstractMaker
                 'pivot_table_names' => $this->getPivotTableNames($classMetaData),
                 'fields' => $fieldDataExtractor->getFieldsData($classMetaData),
                 'faker_locale' => $fakerLocale,
+                "is_user_entity_class" => $isUserEntityClass,
             ]
         );
 
