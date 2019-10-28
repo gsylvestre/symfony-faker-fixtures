@@ -152,19 +152,22 @@ class MethodChooser
         $fieldName = mb_strtolower($fieldMetaData['fieldName']);
         $entityName = $fieldMetaData['entityName'];
 
-        //powerful AI at work here
+        //powerful AI at work here lol
 
-        //
+        var_dump($fieldMetaData['length']);
+
+        //when length is not specified in meta data
+        if (empty($fieldMetaData['length'])){
+            $fieldMetaData['length'] = 255;
+        }
+
         if($fieldMetaData['length'] <= 5){
             return 'randomLetter';
         }
         if($fieldMetaData['length'] <= 9){
             return 'word';
         }
-        if ($fieldName === 'username'){
-            return 'username';
-        }
-        if ($fieldName === 'email'){
+        if (in_array($fieldName, ['email', 'mail', 'email_address', 'mail_address'])){
             return 'email';
         }
         if (in_array($fieldName, ['firstname', 'first_name'])){
@@ -184,6 +187,9 @@ class MethodChooser
         }
         if (in_array($fieldName, ['country', 'countrycode', 'country_code'])){
             return 'countryCode';
+        }
+        if (in_array($fieldName, ['zip', 'postalcode', 'postal_code', 'postcode', 'post_code'])){
+            return 'postcode';
         }
         if ($fieldMetaData['entityName'] === 'country' && $fieldName === 'code'){
             return 'countryCode';
