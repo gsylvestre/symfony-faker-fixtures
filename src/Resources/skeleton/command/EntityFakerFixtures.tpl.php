@@ -84,35 +84,41 @@ foreach($fields as $field):
         if ($field['fieldName'] != "id"):
             if (!empty($field['isSecurityPasswordField'])):
 ?>
-
+            //password
             $plainPassword = "ryanryan";
             $hash = $this->passwordEncoder->encodePassword($user, $plainPassword);
             $user->setPassword($hash);
-
 <?php continue; ?>
 <?php endif; ?>
 <?php
             if ($field['setter'] === null):
 ?>
             //no setter found for <?= $field['fieldName'] ?>
-
 <?php elseif(empty($field['fakerMethod'])): ?>
 <?php if ($security_user_class && $field['setter'] === "setRoles"): ?>
             //roles
-            <?= $var ?>-><?= $field['setter'] ?>([$this->faker->randomElement(["ROLE_USER", "ROLE_ADMIN"])]);
+            <?= $var ?>-><?= $field['setter'] ?>(
+                [$this->faker->randomElement(["ROLE_USER", "ROLE_ADMIN"])]
+            );
 <?php else: ?>
             //no faker method found!
-            //<?= $var ?>-><?= $field['setter'] ?>($this->faker-><?= $field['fakerMethod'] ?>);
+            //<?= $var ?>-><?= $field['setter'] ?>(
+            //    $this->faker-><?= $field['fakerMethod']
+?>
+
+            //);
 <?php endif; ?>
 <?php else: ?>
-            <?= $var ?>-><?= $field['setter'] ?>($this->faker-><?= $field['fakerMethod'] ?>);
+            <?= $var ?>-><?= $field['setter'] ?>(
+                $this->faker-><?= $field['fakerMethod'] ?>
+
+            );
 <?php
             endif;
         endif;
     endif;
 endforeach
 ?>
-
 <?php
 foreach($fields as $field):
     if ($field['isAssoc']):
@@ -125,13 +131,20 @@ foreach($fields as $field):
             */
             //$numberOf<?= $field['fieldName'] ?> = $this->faker->numberBetween($min = 0, $max = 5);
             //for($n = 0; $n < $numberOf<?= $field['fieldName'] ?>; $n++){
-                <?= $var ?>-><?= $field['adder'] ?>($this->faker-><?= $methodName ?>);
-            //}
+                <?= $var ?>-><?= $field['adder'] ?>(
+                    $this->faker-><?= $methodName
+?>
 
+                );
+            //}
 <?php
         elseif (!empty($field['setter'])):
 ?>
-            <?= $var ?>-><?= $field['setter'] ?>($this->faker-><?= $methodName ?>);
+            <?= $var ?>-><?= $field['setter'] ?>(
+                $this->faker-><?= $methodName
+?>
+
+            );
 <?php
         else:
 ?>
@@ -147,9 +160,7 @@ endforeach
         }
 
         $this->manager->flush();
-
         $io->writeln($num . ' "<?= $bound_class ?>" loaded!');
-
         return 0;
     }
 
