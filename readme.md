@@ -5,6 +5,7 @@ Huge thanks to the wonderfull [Faker library](https://github.com/fzaninotto/Fake
 
 ### Main features
 
+- Quick and easy to use
 - Faker method selection based on entities attributes
 - Handling of ManyToMany, ManyToOne, OneToMany and OneToOne association
 - Fixtures order based on association dependencies
@@ -27,7 +28,6 @@ Open a command console, enter your project directory and execute:
 $ composer require gsylvestre/symfony-faker-fixtures
 ```
 
-That's it, your bundle is ready to use! See "How to use" section below.
 
 How to use
 ============
@@ -58,8 +58,15 @@ $ php bin/console make:faker-fixtures --delete-previous
 ```
 Be aware that *you will lose all changes* made to your fixtures commands!
 
+### Localize faker datas?
+If you want your generated datas localized, run: 
+```console
+$ php bin/console make:faker-fixtures --locale=fr_FR
+```
+
+
 ### Running only one fixture?
-Each entity fixture is a seperate command that you can run with:
+Each entity fixture is a unique command that you can run with:
 ```console
 $ php bin/console app:fixtures:entityName 50
 ```
