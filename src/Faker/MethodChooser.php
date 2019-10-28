@@ -154,8 +154,6 @@ class MethodChooser
 
         //powerful AI at work here lol
 
-        var_dump($fieldMetaData['length']);
-
         //when length is not specified in meta data
         if (empty($fieldMetaData['length'])){
             $fieldMetaData['length'] = 255;

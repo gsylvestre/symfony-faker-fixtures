@@ -19,7 +19,7 @@ class FieldDataExtractor
      * @param ClassMetadata $classMetadata
      * @return array
      */
-    public function getFieldsData(ClassMetadata $classMetadata): array
+    public function getFieldsData(ClassMetadata $classMetadata, array $securityUserClass = null): array
     {
         //help choose best faker method
         $fakerMethodChooser = new MethodChooser();
@@ -27,11 +27,18 @@ class FieldDataExtractor
         $fields = [];
         foreach($classMetadata->getFieldNames() as $fieldName){
             $field = $classMetadata->getFieldMapping($fieldName);
+
             $field['isAssoc'] = false;
             $field['setter'] = $this->guessSetterName($classMetadata->getName(), $fieldName);
             $field['getter'] = $this->guessGetterName($classMetadata->getName(), $fieldName);
             $field['entityName'] = $classMetadata->getName();
             $field['fakerMethod'] = $fakerMethodChooser->choose($field);
+
+            //security user class password field?
+            if (!empty($securityUserClass) && $fieldName === $securityUserClass['password_field']){
+                $field['fakerMethod'] = null;
+                $field["isSecurityPasswordField"] = true;
+            }
             $fields[] = $field;
         }
 

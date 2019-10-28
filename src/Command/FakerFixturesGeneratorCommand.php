@@ -22,7 +22,9 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Question\Question;
 use Symfony\Bundle\MakerBundle\Validator;
+use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Component\Finder\Exception\DirectoryNotFoundException;
 use Symfony\Component\Finder\SplFileInfo;
 use Doctrine\ORM\Tools\SchemaValidator;
 
@@ -217,8 +219,8 @@ class FakerFixturesGeneratorCommand extends AbstractMaker
         //helps get infos about each field
         $fieldDataExtractor = new FieldDataExtractor();
 
-        $isUserEntityClass = false;
-
+        //are we generating the class used with Security?
+        $securityUserClass = null;
         if ($this->fileManager->fileExists($path = 'config/packages/security.yaml')) {
             $manipulator = new YamlSourceManipulator($this->fileManager->getFileContents($path));
             $securityData = $manipulator->getData();
@@ -226,13 +228,14 @@ class FakerFixturesGeneratorCommand extends AbstractMaker
             if (1 === \count($providersData) && isset(current($providersData)['entity'])) {
                 $entityProvider = current($providersData);
                 $userClass = $entityProvider['entity']['class'];
-                dump($userClass);
-                dump($entityFullName === $userClass);
-                die();
+                if($entityFullName === $userClass) {
+                    $securityUserClass = [
+                        "class_name" => $entityFullName,
+                        "password_field" => (property_exists($userClass, 'password')) ? 'password' : null,
+                    ];
+                }
             }
         }
-
-
 
         $generator->generateClass(
             $commandClassNameDetails->getFullName(),
@@ -243,9 +246,9 @@ class FakerFixturesGeneratorCommand extends AbstractMaker
                 'bounded_full_class_name' => $classMetaData->getName(),
                 'table_name' => $classMetaData->getTableName(),
                 'pivot_table_names' => $this->getPivotTableNames($classMetaData),
-                'fields' => $fieldDataExtractor->getFieldsData($classMetaData),
+                'fields' => $fieldDataExtractor->getFieldsData($classMetaData, $securityUserClass),
                 'faker_locale' => $fakerLocale,
-                "is_user_entity_class" => $isUserEntityClass,
+                "security_user_class" => $securityUserClass,
             ]
         );
 
@@ -272,10 +275,18 @@ class FakerFixturesGeneratorCommand extends AbstractMaker
 
     /**
      * Delete all files in FakerFixtures dir
+     * @param SymfonyStyle $io
      */
     private function deletePreviousFixtures($io): void
     {
-        $finder = $this->fileManager->createFinder("src/Command/FakerFixtures");
+        try {
+            $finder = $this->fileManager->createFinder("src/Command/FakerFixtures");
+        } catch (\Exception $e){
+            if ($e instanceof DirectoryNotFoundException){
+                $io->warning("FakerFixtures directory does not exists! Nothing to delete.");
+                return;
+            }
+        }
 
         if (!$finder->hasResults()) {
             $io->writeln("No fixtures to remove");

@@ -9,6 +9,9 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Bridge\Doctrine\RegistryInterface;
+<?php if ($security_user_class): ?>
+use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
+<?php endif ?>
 
 <?php if ($bounded_full_class_name): ?>
 use <?= $bounded_full_class_name?>;
@@ -30,13 +33,19 @@ class <?= $class_name; ?> extends Command
     protected $manager = null;
     protected $doctrine = null;
     protected $faker = null;
+<?php if ($security_user_class): ?>
+    protected $passwordEncoder = null;
+<?php endif; ?>
 
-    public function __construct(RegistryInterface $doctrine, $name = null)
+    public function __construct(RegistryInterface $doctrine<?php if ($security_user_class): ?>, UserPasswordEncoderInterface $passwordEncoder<?php endif; ?>, $name = null)
     {
         parent::__construct($name);
         $this->manager = $doctrine->getManager();
         $this->doctrine = $doctrine;
         $this->faker = \Faker\Factory::create($locale = '<?= $faker_locale ?>');
+<?php if ($security_user_class): ?>
+        $this->passwordEncoder = $passwordEncoder;
+<?php endif; ?>
     }
 
     protected function configure()
@@ -73,6 +82,16 @@ endforeach;
 foreach($fields as $field):
     if (!$field['isAssoc']):
         if ($field['fieldName'] != "id"):
+            if (!empty($field['isSecurityPasswordField'])):
+?>
+
+            $plainPassword = "ryanryan";
+            $hash = $this->passwordEncoder->encodePassword($user, $plainPassword);
+            $user->setPassword($hash);
+
+<?php continue; ?>
+<?php endif; ?>
+<?php
             if ($field['setter'] === null):
 ?>
             //no setter found for <?= $field['fieldName'] ?>
