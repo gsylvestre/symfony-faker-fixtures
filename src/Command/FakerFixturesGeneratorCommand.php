@@ -3,30 +3,23 @@
 namespace FakerFixtures\Command;
 
 use Doctrine\Common\Persistence\ObjectManager;
-use Doctrine\ORM\Mapping\ClassMetadata;
+use FakerFixtures\Doctrine\AssociationHelper;
 use FakerFixtures\Doctrine\DepencyGraph;
 use FakerFixtures\Doctrine\FieldDataExtractor;
+use FakerFixtures\Security\UserClassHelper;
 use Symfony\Bundle\MakerBundle\ConsoleStyle;
 use Symfony\Bundle\MakerBundle\DependencyBuilder;
 use Symfony\Bundle\MakerBundle\Doctrine\DoctrineHelper;
-use Symfony\Bundle\MakerBundle\FileManager;
 use Symfony\Bundle\MakerBundle\Generator;
 use Symfony\Bundle\MakerBundle\InputConfiguration;
 use Symfony\Bundle\MakerBundle\Maker\AbstractMaker;
-use Symfony\Bundle\MakerBundle\Security\InteractiveSecurityHelper;
 use Symfony\Bundle\MakerBundle\Str;
 use Symfony\Bundle\MakerBundle\Util\YamlSourceManipulator;
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
-use Symfony\Component\Console\Question\Question;
-use Symfony\Bundle\MakerBundle\Validator;
-use Symfony\Component\Console\Style\SymfonyStyle;
-use Symfony\Component\Filesystem\Filesystem;
-use Symfony\Component\Finder\Exception\DirectoryNotFoundException;
-use Symfony\Component\Finder\SplFileInfo;
 use Doctrine\ORM\Tools\SchemaValidator;
+use FakerFixtures\File\FileManager;
 
 
 /**
@@ -39,11 +32,16 @@ class FakerFixturesGeneratorCommand extends AbstractMaker
     /** @var DoctrineHelper */
     private $entityHelper;
 
+    /** @var UserClassHelper */
+    private $userClassHelper;
+
     /** @var int */
     private $time;
 
     /** @var array */
     private $commandNames = [];
+
+    private $securityUserClass;
 
     //OMG i didnt do that
     /** @TODO this will break hard */
@@ -52,12 +50,17 @@ class FakerFixturesGeneratorCommand extends AbstractMaker
     /**
      * FakerFixturesGeneratorCommand constructor.
      * @param DoctrineHelper $entityHelper
+     * @param FileManager $fileManager
      */
     public function __construct(DoctrineHelper $entityHelper, FileManager $fileManager)
     {
         $this->time = time();
         $this->fileManager = $fileManager;
         $this->entityHelper = $entityHelper;
+        $this->userClassHelper = new UserClassHelper($fileManager);
+
+        //are we generating the class used with Security?
+        $this->securityUserClass = $this->userClassHelper->getUserClassInfos();
     }
 
     /**
@@ -106,7 +109,7 @@ class FakerFixturesGeneratorCommand extends AbstractMaker
     public function generate(InputInterface $input, ConsoleStyle $io, Generator $generator): void
     {
         if ($input->getOption('delete-previous')){
-            $this->deletePreviousFixtures($io);
+            $this->fileManager->deletePreviousFixtures($io);
         }
 
         $fakerLocale = $input->getOption('locale');
@@ -219,24 +222,6 @@ class FakerFixturesGeneratorCommand extends AbstractMaker
         //helps get infos about each field
         $fieldDataExtractor = new FieldDataExtractor();
 
-        //are we generating the class used with Security?
-        $securityUserClass = null;
-        if ($this->fileManager->fileExists($path = 'config/packages/security.yaml')) {
-            $manipulator = new YamlSourceManipulator($this->fileManager->getFileContents($path));
-            $securityData = $manipulator->getData();
-            $providersData = $securityData['security']['providers'] ?? [];
-            if (1 === \count($providersData) && isset(current($providersData)['entity'])) {
-                $entityProvider = current($providersData);
-                $userClass = $entityProvider['entity']['class'];
-                if($entityFullName === $userClass) {
-                    $securityUserClass = [
-                        "class_name" => $entityFullName,
-                        "password_field" => (property_exists($userClass, 'password')) ? 'password' : null,
-                    ];
-                }
-            }
-        }
-
         $generator->generateClass(
             $commandClassNameDetails->getFullName(),
             self::PATH_TO_SKELETONS . "EntityFakerFixtures.tpl.php",
@@ -245,68 +230,14 @@ class FakerFixturesGeneratorCommand extends AbstractMaker
                 'bound_class' => $boundClass,
                 'bounded_full_class_name' => $classMetaData->getName(),
                 'table_name' => $classMetaData->getTableName(),
-                'pivot_table_names' => $this->getPivotTableNames($classMetaData),
-                'fields' => $fieldDataExtractor->getFieldsData($classMetaData, $securityUserClass),
+                'pivot_table_names' => AssociationHelper::getPivotTableNames($classMetaData),
+                'fields' => $fieldDataExtractor->getFieldsData($classMetaData, $this->securityUserClass),
                 'faker_locale' => $fakerLocale,
-                "security_user_class" => $securityUserClass,
+                "security_user_class" => $this->securityUserClass,
             ]
         );
 
         $generator->writeChanges();
-    }
-
-    /**
-     * get all pivot table names (for truncation)
-     *
-     * @param ClassMetadata $classMetaData
-     * @return array
-     */
-    private function getPivotTableNames(ClassMetadata $classMetaData): array
-    {
-        $names = [];
-        foreach($classMetaData->getAssociationMappings() as $property => $associationInfo){
-            if (!empty($associationInfo['joinTable']['name'])){
-                $names[] = $associationInfo['joinTable']['name'];
-            }
-        }
-
-        return $names;
-    }
-
-    /**
-     * Delete all files in FakerFixtures dir
-     * @param SymfonyStyle $io
-     */
-    private function deletePreviousFixtures($io): void
-    {
-        try {
-            $finder = $this->fileManager->createFinder("src/Command/FakerFixtures");
-        } catch (\Exception $e){
-            if ($e instanceof DirectoryNotFoundException){
-                $io->warning("FakerFixtures directory does not exists! Nothing to delete.");
-                return;
-            }
-        }
-
-        if (!$finder->hasResults()) {
-            $io->writeln("No fixtures to remove");
-            return;
-        }
-
-        $foundFiles = $finder->files();
-        $foundFilesNames = [];
-        /** @var Symfony\Component\Finder\SplFileInfo $file */
-        foreach($foundFiles as $file){
-            $foundFilesNames[] = $file->getFilename();
-        }
-
-        $confirmed = $io->confirm('<bg=yellow;options=bold>Are you sure you want to delete all these files?</>' . "\n" . implode("\n", $foundFilesNames) . "\n", false);
-        if (!$confirmed) {
-            return;
-        }
-
-        $fs = new Filesystem();
-        $fs->remove($finder);
     }
 
     /**

@@ -5,7 +5,7 @@
         http://symfony.com/schema/dic/services/services-1.0.xsd">
     <services>
 
-        <service id="maker.file_manager" class="Symfony\Bundle\MakerBundle\FileManager">
+        <service id="maker.file_manager" class="FakerFixtures\File\FileManager">
             <argument type="service" id="filesystem" />
             <argument type="service" id="maker.autoloader_util" />
             <argument>%kernel.project_dir%</argument>
