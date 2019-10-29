@@ -54,9 +54,6 @@ class FakerFixturesGeneratorCommand extends AbstractMaker
         $this->fileManager = $fileManager;
         $this->entityHelper = $entityHelper;
         $this->userClassHelper = new UserClassHelper($fileManager);
-
-        //are we generating the class used with Security?
-        $this->securityUserClass = $this->userClassHelper->getUserClassInfos();
     }
 
     /**
@@ -109,6 +106,9 @@ class FakerFixturesGeneratorCommand extends AbstractMaker
         }
 
         $fakerLocale = $input->getOption('locale');
+        
+        //are we generating the class used with Security?
+        $this->securityUserClass = $this->userClassHelper->getUserClassInfos();
 
         $em = $this->entityHelper->getRegistry()->getManager();
 
