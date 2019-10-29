@@ -3,7 +3,7 @@
 namespace FakerFixtures\Faker;
 
 use Faker\Factory;
-use FakerFixtures\Doctrine\DepencyGraph;
+use FakerFixtures\Doctrine\DependencyGraph;
 
 /**
  *
@@ -69,7 +69,7 @@ class MethodChooser
 
         if ($fieldMetaData['isAssoc']){
             $method = "randomElement(%s)";
-            if($fieldMetaData['type'] === DepencyGraph::ONETOONE || $fieldMetaData['type'] === DepencyGraph::MANYTOMANY) {
+            if($fieldMetaData['type'] === DependencyGraph::ONETOONE || $fieldMetaData['type'] === DependencyGraph::MANYTOMANY) {
                 $method = "unique()->$method";
             }
             if(!empty($fieldMetaData['joinColumns'][0]['nullable'])){

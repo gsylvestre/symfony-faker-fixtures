@@ -47,11 +47,11 @@ class FieldDataExtractor
             /** @var array $association */
             $association = $classMetadata->getAssociationMapping($associationName);
 
-            if (DepencyGraph::isADependantAssociation($association)){
+            if (DependencyGraph::isADependantAssociation($association)){
                 $field = $association;
                 $field['assocShortClassName'] = $boundClass = (new \ReflectionClass($association['targetEntity']))->getShortName();
                 $field['isAssoc'] = true;
-                if ($field['type'] === DepencyGraph::ONETOONE || $field['type'] === DepencyGraph::MANYTOONE){
+                if ($field['type'] === DependencyGraph::ONETOONE || $field['type'] === DependencyGraph::MANYTOONE){
                     $field['setter'] = $this->guessSetterName($classMetadata->getName(), $associationName);
                 }
                 else {

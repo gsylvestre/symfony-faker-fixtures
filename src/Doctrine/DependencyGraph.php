@@ -10,10 +10,10 @@ use Doctrine\ORM\Mapping\ClassMetadata;
  *
  * Determine order in which to load the fixtures.
  *
- * Class DepencyGraph
+ * Class DependencyGraph
  * @package FakerFixtures\Doctrine
  */
-class DepencyGraph
+class DependencyGraph
 {
     //doctrine relation types
     const ONETOMANY = 4;
@@ -45,7 +45,7 @@ class DepencyGraph
     private $lastNumberInWaitingRoom = null;
 
     /**
-     * DepencyGraph constructor.
+     * DependencyGraph constructor.
      * @param array $classMetas
      */
     public function __construct(array $classMetas)

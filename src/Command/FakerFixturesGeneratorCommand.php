@@ -4,7 +4,7 @@ namespace FakerFixtures\Command;
 
 use Doctrine\Common\Persistence\ObjectManager;
 use FakerFixtures\Doctrine\AssociationHelper;
-use FakerFixtures\Doctrine\DepencyGraph;
+use FakerFixtures\Doctrine\DependencyGraph;
 use FakerFixtures\Doctrine\FieldDataExtractor;
 use FakerFixtures\Security\UserClassHelper;
 use Symfony\Bundle\MakerBundle\ConsoleStyle;
@@ -106,7 +106,7 @@ class FakerFixturesGeneratorCommand extends AbstractMaker
         }
 
         $fakerLocale = $input->getOption('locale');
-        
+
         //are we generating the class used with Security?
         $this->securityUserClass = $this->userClassHelper->getUserClassInfos();
 
@@ -160,8 +160,8 @@ class FakerFixturesGeneratorCommand extends AbstractMaker
         );
 
         //which entity to load first ? based on entities relations
-        $depencyGraph = new DepencyGraph($metas);
-        $orderedClassesInfos = $depencyGraph->getOrder();
+        $dependencyGraph = new DependencyGraph($metas);
+        $orderedClassesInfos = $dependencyGraph->getOrder();
 
         $generator->generateClass(
             $commandClassNameDetails->getFullName(),
