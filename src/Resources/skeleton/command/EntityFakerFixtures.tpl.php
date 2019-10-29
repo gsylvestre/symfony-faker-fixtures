@@ -1,5 +1,4 @@
 <?= "<?php\n"; ?>
-//coucou
 namespace <?= $namespace; ?>;
 
 use Symfony\Component\Console\Command\Command;
@@ -86,8 +85,8 @@ foreach($fields as $field):
 ?>
             //password
             $plainPassword = "ryanryan";
-            $hash = $this->passwordEncoder->encodePassword($user, $plainPassword);
-            $user->setPassword($hash);
+            $hash = $this->passwordEncoder->encodePassword(<?= $var ?>, $plainPassword);
+            <?= $var ?>->setPassword($hash);
 <?php continue; ?>
 <?php endif; ?>
 <?php
