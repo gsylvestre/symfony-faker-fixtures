@@ -35,9 +35,6 @@ class FakerFixturesGeneratorCommand extends AbstractMaker
     /** @var UserClassHelper */
     private $userClassHelper;
 
-    /** @var int */
-    private $time;
-
     /** @var array */
     private $commandNames = [];
 
@@ -54,7 +51,6 @@ class FakerFixturesGeneratorCommand extends AbstractMaker
      */
     public function __construct(DoctrineHelper $entityHelper, FileManager $fileManager)
     {
-        $this->time = time();
         $this->fileManager = $fileManager;
         $this->entityHelper = $entityHelper;
         $this->userClassHelper = new UserClassHelper($fileManager);
