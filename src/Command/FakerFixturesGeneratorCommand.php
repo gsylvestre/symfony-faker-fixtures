@@ -38,8 +38,6 @@ class FakerFixturesGeneratorCommand extends AbstractMaker
     /** @var array */
     private $commandNames = [];
 
-    private $securityUserClass;
-
     //OMG i didnt do that
     /** @TODO this will break hard */
     const PATH_TO_SKELETONS = '../../../../../gsylvestre/symfony-faker-fixtures/src/Resources/skeleton/command/';
@@ -106,9 +104,6 @@ class FakerFixturesGeneratorCommand extends AbstractMaker
         }
 
         $fakerLocale = $input->getOption('locale');
-
-        //are we generating the class used with Security?
-        $this->securityUserClass = $this->userClassHelper->getUserClassInfos();
 
         $em = $this->entityHelper->getRegistry()->getManager();
 
@@ -218,6 +213,12 @@ class FakerFixturesGeneratorCommand extends AbstractMaker
         //helps get infos about each field
         $fieldDataExtractor = new FieldDataExtractor();
 
+        //are we generating the class used with Security?
+        $securityUserClass = null;
+        if ($this->userClassHelper->isSecurityUserClass($boundClassDetails->getFullName())) {
+            $securityUserClass = $this->userClassHelper->getUserClassInfos();
+        }
+
         $generator->generateClass(
             $commandClassNameDetails->getFullName(),
             self::PATH_TO_SKELETONS . "EntityFakerFixtures.tpl.php",
@@ -227,9 +228,9 @@ class FakerFixturesGeneratorCommand extends AbstractMaker
                 'bounded_full_class_name' => $classMetaData->getName(),
                 'table_name' => $classMetaData->getTableName(),
                 'pivot_table_names' => AssociationHelper::getPivotTableNames($classMetaData),
-                'fields' => $fieldDataExtractor->getFieldsData($classMetaData, $this->securityUserClass),
+                'fields' => $fieldDataExtractor->getFieldsData($classMetaData, $securityUserClass),
                 'faker_locale' => $fakerLocale,
-                "security_user_class" => $this->securityUserClass,
+                "security_user_class" => $securityUserClass,
             ]
         );
 
