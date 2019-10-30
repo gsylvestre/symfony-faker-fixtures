@@ -26,10 +26,10 @@ class FileManager extends \Symfony\Bundle\MakerBundle\FileManager
     public function deletePreviousFixtures(SymfonyStyle $io): void
     {
         try {
-            $finder = $this->createFinder("src/Command/FakerFixtures");
+            $finder = $this->createFinder("src/Command/");
         } catch (\Exception $e){
             if ($e instanceof DirectoryNotFoundException){
-                $io->warning("FakerFixtures directory does not exists! Nothing to delete.");
+                $io->warning("Command directory does not exists! Nothing to delete.");
                 return;
             }
         }

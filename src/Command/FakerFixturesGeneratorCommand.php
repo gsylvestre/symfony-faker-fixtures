@@ -2,7 +2,9 @@
 
 namespace FakerFixtures\Command;
 
+use Doctrine\Common\Inflector\Inflector;
 use Doctrine\Common\Persistence\ObjectManager;
+use Doctrine\ORM\Mapping\ClassMetadata;
 use FakerFixtures\Doctrine\AssociationHelper;
 use FakerFixtures\Doctrine\DependencyGraph;
 use FakerFixtures\Doctrine\FieldDataExtractor;
@@ -117,12 +119,7 @@ class FakerFixturesGeneratorCommand extends AbstractMaker
 
         $metas = $em->getMetadataFactory()->getAllMetadata();
 
-        foreach ($metas as $meta) {
-            $entityFullName = $meta->getName();
-            $this->generateEntityFixtureClass($entityFullName, $input, $io, $generator, $fakerLocale);
-        }
-
-        $this->generateMetaFixtureClass($metas, $generator);
+        $this->generateMetaFixtureClass($metas, $generator, $fakerLocale);
 
         $this->writeSuccessMessage($io);
 
@@ -143,13 +140,13 @@ class FakerFixturesGeneratorCommand extends AbstractMaker
      * @throws \Exception
      * @return void
      */
-    private function generateMetaFixtureClass(array $metas, Generator $generator): void
+    private function generateMetaFixtureClass(array $metas, Generator $generator, string $fakerLocale): void
     {
         //generated command details
-        $commandName = "app:fixtures:load-all";
+        $commandName = "app:fixtures:load";
         $commandClassNameDetails = $generator->createClassNameDetails(
             "LoadAllFixtures",
-            'Command\\FakerFixtures',
+            'Command',
             'Command',
             sprintf('The "%s" command name is not valid because it would be implemented by "%s" class, which is not valid as a PHP class name (it must start with a letter or underscore, followed by any number of letters, numbers, or underscores).', $commandName, Str::asClassName($commandName, 'Command'))
         );
@@ -157,81 +154,43 @@ class FakerFixturesGeneratorCommand extends AbstractMaker
         //which entity to load first ? based on entities relations
         $em = $this->entityHelper->getRegistry()->getManager();
         $dependencyGraph = new DependencyGraph($metas, $em);
-        $orderedClassesInfos = $dependencyGraph->getOrder();
+
+        $inflector = new Inflector();
+
+        $entitiesData = [];
+        /** @var ClassMetadata $classMetaData */
+        foreach($dependencyGraph->getDependencyGraph() as $classMetaData){
+            //helps get infos about each field
+            $fieldDataExtractor = new FieldDataExtractor();
+
+            //are we generating the class used with Security?
+            $securityUserClass = null;
+            if ($this->userClassHelper->isSecurityUserClass($classMetaData->getName())) {
+                $securityUserClass = $this->userClassHelper->getUserClassInfos();
+            }
+
+            $shortClassName = (new \ReflectionClass($classMetaData->getName()))->getShortName();
+
+            $data = [
+                'short_class_name' => $shortClassName,
+                'full_class_name' => $classMetaData->getName(),
+                'table_name' => $classMetaData->getTableName(),
+                'pivot_table_names' => AssociationHelper::getPivotTableNames($classMetaData),
+                'fields' => $fieldDataExtractor->getFieldsData($classMetaData, $securityUserClass),
+                'faker_locale' => $fakerLocale,
+                "security_user_class" => $securityUserClass,
+                "plural_name" => $inflector->pluralize($shortClassName)
+            ];
+
+            $entitiesData[] = $data;
+        }
 
         $generator->generateClass(
             $commandClassNameDetails->getFullName(),
             self::PATH_TO_SKELETONS . 'MetaFakerFixtures.tpl.php',
             [
                 'command_name' => $commandName,
-                'class_infos' => $orderedClassesInfos,
-                'sub_command_names' => $this->commandNames,
-            ]
-        );
-
-        $generator->writeChanges();
-    }
-
-    /**
-     *
-     * Generates a single entity fixture class
-     *
-     * @param string $entityFullName
-     * @param InputInterface $input
-     * @param ConsoleStyle $io
-     * @param Generator $generator
-     * @throws \ReflectionException
-     * @return void
-     */
-    private function generateEntityFixtureClass(string $entityFullName, InputInterface $input, ConsoleStyle $io, Generator $generator, string $fakerLocale): void
-    {
-        //short class name, useful for variables in command...
-        $boundClass = (new \ReflectionClass($entityFullName))->getShortName();
-
-        //generated command details
-        $commandName = "app:fixtures:".mb_strtolower($boundClass);
-        //$boundClass = trim($input->getArgument('bound-class'));
-        $commandClassNameDetails = $generator->createClassNameDetails(
-            $boundClass."Fixture",
-            'Command\\FakerFixtures',
-            'Command',
-            sprintf('The "%s" command name is not valid because it would be implemented by "%s" class, which is not valid as a PHP class name (it must start with a letter or underscore, followed by any number of letters, numbers, or underscores).', $commandName, Str::asClassName($commandName, 'Command'))
-        );
-
-        //remember all generated command names
-        $this->commandNames[$entityFullName] = $commandName;
-
-        /** @var ObjectManager $em */
-        $em = $this->entityHelper->getRegistry()->getManager();
-
-        //get entity Doctrine metadata
-        $boundClassDetails = $generator->createClassNameDetails(
-            $boundClass,
-            'Entity\\'
-        );
-        $classMetaData = $em->getClassMetadata($boundClassDetails->getFullName());
-
-        //helps get infos about each field
-        $fieldDataExtractor = new FieldDataExtractor();
-
-        //are we generating the class used with Security?
-        $securityUserClass = null;
-        if ($this->userClassHelper->isSecurityUserClass($boundClassDetails->getFullName())) {
-            $securityUserClass = $this->userClassHelper->getUserClassInfos();
-        }
-
-        $generator->generateClass(
-            $commandClassNameDetails->getFullName(),
-            self::PATH_TO_SKELETONS . "EntityFakerFixtures.tpl.php",
-            [
-                'command_name' => $commandName,
-                'bound_class' => $boundClass,
-                'bounded_full_class_name' => $classMetaData->getName(),
-                'table_name' => $classMetaData->getTableName(),
-                'pivot_table_names' => AssociationHelper::getPivotTableNames($classMetaData),
-                'fields' => $fieldDataExtractor->getFieldsData($classMetaData, $securityUserClass),
-                'faker_locale' => $fakerLocale,
-                "security_user_class" => $securityUserClass,
+                "class_full_infos" => $entitiesData,
             ]
         );
 

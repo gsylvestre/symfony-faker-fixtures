@@ -10,12 +10,21 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Bridge\Doctrine\RegistryInterface;
 use Symfony\Component\Console\Input\ArrayInput;
+use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
+<?php foreach($class_full_infos as $classInfo): ?>
+use <?= $classInfo['full_class_name'] ?>;
+<?php endforeach; ?>
 
 class <?= $class_name; ?> extends Command
 {
     protected static $defaultName = '<?= $command_name; ?>';
     protected $io;
     protected $output;
+
+    public function __construct()
+    {
+
+    }
 
     protected function configure()
     {
@@ -27,35 +36,28 @@ class <?= $class_name; ?> extends Command
         $this->io = new SymfonyStyle($input, $output);
         $this->output = $output;
 
+        $this->truncateTables();
+
         //order might be !important
         //change second argument to load more or less of each entity
-<?php foreach($class_infos as $info): ?>
-        $this->findAndExecuteCommand("<?= $sub_command_names[$info] ?>", 10);
-<?php endforeach; ?>
+
+
+        //now loading ManyToMany data
 
         $this->io->success('Fixtures loaded!');
         return 0;
     }
 
-    protected function findAndExecuteCommand($commandName, int $howMany = 10)
+<?php foreach($class_full_infos as $info): ?>
+    <?php include('EntityFakerFixtures.tpl.php') ?>
+
+<?php endforeach; ?>
+
+    protected function truncateTables()
     {
-        try {
-            $command = $this->getApplication()->find("$commandName");
-            $command->run(new ArrayInput(['num' => $howMany]), $this->output);
-        }
-        catch (\Exception $e){
-            $trace = $e->getTrace();
-            $help = $e->getMessage();
-            if ($e instanceof \OverflowException){
-                $help = "Error occurred in the command $commandName, but you likely should increase the generated number of the ASSOCIATED entity.";
-            }
-            $this->io->error($help);
+        $connection = $this->doctrine->getConnection();
+        $connection->query("SET FOREIGN_KEY_CHECKS = 0");
 
-            $parts = explode("\\", $trace[0]['file']);
-            $filename = array_pop($parts);
-            $this->io->warning("Have a look in {$filename} line {$trace[0]['line']}");
-
-            die();
-        }
+        $connection->query("SET FOREIGN_KEY_CHECKS = 1");
     }
 }

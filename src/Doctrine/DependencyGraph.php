@@ -119,6 +119,14 @@ class DependencyGraph
         return $this->order;
     }
 
+    /**
+     * @return array
+     */
+    public function getDependencyGraph(): array
+    {
+        return $this->dependencyGraph;
+    }
+
 
     public static function isADependantAssociation($associationMapping): bool
     {
