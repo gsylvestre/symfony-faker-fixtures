@@ -155,7 +155,8 @@ class FakerFixturesGeneratorCommand extends AbstractMaker
         );
 
         //which entity to load first ? based on entities relations
-        $dependencyGraph = new DependencyGraph($metas);
+        $em = $this->entityHelper->getRegistry()->getManager();
+        $dependencyGraph = new DependencyGraph($metas, $em);
         $orderedClassesInfos = $dependencyGraph->getOrder();
 
         $generator->generateClass(

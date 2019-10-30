@@ -2,6 +2,8 @@
 
 namespace FakerFixtures\Doctrine;
 
+use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\Internal\CommitOrderCalculator;
 use Doctrine\ORM\Mapping\ClassMetadata;
 
 /**  @TODO : handle all relation types ! */
@@ -32,26 +34,24 @@ class DependencyGraph
      */
     private $order = [];
 
-    /**
-     * Help sort the entities
-     * @var array
-     */
-    private $waitingRoom = [];
+    private $dependencyGraph;
 
-    /**
-     * Help avoiding infinite loop
-     * @var null
-     */
-    private $lastNumberInWaitingRoom = null;
+    /** @var EntityManager */
+    private $em;
 
     /**
      * DependencyGraph constructor.
      * @param array $classMetas
      */
-    public function __construct(array $classMetas)
+    public function __construct(array $classMetas, $em)
     {
         $this->classMetas = $classMetas;
-        $this->buildDepencyGraph();
+        $this->em = $em;
+        $this->dependencyGraph = $this->buildDepencyGraph();
+        foreach($this->dependencyGraph as $classMeta){
+            $this->order[] = $classMeta->getName();
+        }
+        var_dump($this->order);
     }
 
     /**
@@ -59,113 +59,56 @@ class DependencyGraph
      *
      * @throws \Exception
      */
-    private function buildDepencyGraph():void
+    private function buildDepencyGraph():array
     {
-        /** @var ClassMetadata $meta */
-        foreach($this->classMetas as $meta){
-            //entity has no depency, we add it right away at the beginning
-            if (!$this->hasDependencyRelations($meta)){
-                $this->order[] = $meta->getName();
-            }
-            else {
-                //this class will have to wait
-                $this->waitingRoom[] = $meta;
-            }
+        $calc = new CommitOrderCalculator();
+
+        $newNodes = [];
+
+        foreach ($this->classMetas as $class) {
+            $calc->addNode($class->name, $class);
+            $newNodes[] = $class;
         }
 
-        //start handle entities in waiting room
-        $this->handleWaitingRoom();
-    }
+        // Calculate dependencies for new nodes
+        while ($class = array_pop($newNodes)) {
+            foreach ($class->associationMappings as $assoc) {
+                if ( ! ($assoc['isOwningSide'] && $assoc['type'] & ClassMetadata::TO_ONE)) {
+                    continue;
+                }
 
-    /**
-     * Recursive function that sort classes based on relationship dependencies
-     *
-     * @throws \Exception
-     */
-    private function handleWaitingRoom(): void
-    {
-        //avoid infinite loops
-        $this->lastNumberInWaitingRoom = count($this->waitingRoom);
+                $targetClass = $this->em->getClassMetadata($assoc['targetEntity']);
 
-        for($i=0; $i<count($this->waitingRoom); $i++){
-            //all deps already in $order ?
-            if ($this->dependenciesAreAllSatisfied($this->waitingRoom[$i])){
-                //remove the entity from waiting room and add it to $order
-                $this->order[] = $this->waitingRoom[$i]->getName();
-                unset($this->waitingRoom[$i]);
-                $this->waitingRoom = array_values($this->waitingRoom);
-                break;
-            }
-        }
+                if ( ! $calc->hasNode($targetClass->name)) {
+                    $calc->addNode($targetClass->name, $targetClass);
 
-        //avoir infinite llops
-        if (count($this->waitingRoom) === $this->lastNumberInWaitingRoom){
-            throw new \Exception("something wrong with relations. Infinite loop.");
-        }
+                    $newNodes[] = $targetClass;
+                }
 
-        //not done, go again
-        if (!empty($this->waitingRoom)){
-            $this->handleWaitingRoom();
-        }
-    }
+                $joinColumns = reset($assoc['joinColumns']);
 
-    /**
-     * Test if all relation dependencies are already in $order
-     *
-     * @param ClassMetadata $meta
-     * @return bool
-     */
-    private function dependenciesAreAllSatisfied(ClassMetadata $meta): bool
-    {
-        foreach($meta->getAssociationMappings() as $property => $infos){
-            //many to one or many to many owning side
-            if ($infos['type'] === self::MANYTOONE ||
-                ($infos['type'] === self::MANYTOMANY && $infos['isOwningSide']))
-            {
-                //dependency missing, not ready to get out of waiting room
-                if (!in_array($infos['targetEntity'], $this->order)){
-                    return false;
+                $calc->addDependency($targetClass->name, $class->name, (int)empty($joinColumns['nullable']));
+
+                // If the target class has mapped subclasses, these share the same dependency.
+                if ( ! $targetClass->subClasses) {
+                    continue;
+                }
+
+                foreach ($targetClass->subClasses as $subClassName) {
+                    $targetSubClass = $this->em->getClassMetadata($subClassName);
+
+                    if ( ! $calc->hasNode($subClassName)) {
+                        $calc->addNode($targetSubClass->name, $targetSubClass);
+
+                        $newNodes[] = $targetSubClass;
+                    }
+
+                    $calc->addDependency($targetSubClass->name, $class->name, 1);
                 }
             }
         }
 
-        return true;
-    }
-
-    /**
-     * Determines if an entity has dependecy relationships
-     *
-     * @param ClassMetadata $meta
-     * @return bool
-     */
-    private function hasDependencyRelations(ClassMetadata $meta): bool
-    {
-        $associationMappings = $meta->getAssociationMappings();
-        if (empty($associationMappings)){
-            return false;
-        }
-
-        foreach($associationMappings as $property => $infos){
-            if (self::isADependantAssociation($infos)){
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    public static function isADependantAssociation($associationMapping)
-    {
-        if ($associationMapping['type'] === self::MANYTOONE){
-            return true;
-        }
-        if (in_array($associationMapping['type'], [self::MANYTOMANY, self::ONETOONE])){
-            if ($associationMapping['isOwningSide']){
-                return true;
-            }
-        }
-
-        return false;
+        return $calc->sort();
     }
 
     /**
