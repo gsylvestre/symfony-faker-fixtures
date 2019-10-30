@@ -118,4 +118,18 @@ class DependencyGraph
     {
         return $this->order;
     }
+
+
+    public static function isADependantAssociation($associationMapping): bool
+    {
+        if ($associationMapping['type'] === self::MANYTOONE){
+            return true;
+        }
+        if (in_array($associationMapping['type'], [self::MANYTOMANY, self::ONETOONE])){
+            if ($associationMapping['isOwningSide']){
+                return true;
+            }
+        }
+        return false;
+    }
 }
