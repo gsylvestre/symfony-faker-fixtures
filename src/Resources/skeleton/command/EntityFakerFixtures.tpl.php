@@ -1,6 +1,6 @@
     protected function load<?= ucfirst($info['plural_name']) ?>(int $num): void
     {
-        $this->progress->setMessage("loading <?= $info['plural_name'] ?>");
+        $this->progress->setMessage("loading <?= mb_strtolower($info['plural_name']) ?>");
 <?php
 foreach($info['fields'] as $field):
     if ($field['isAssoc'] && $field['type'] !== \FakerFixtures\Doctrine\DependencyGraph::MANYTOMANY):
@@ -11,7 +11,7 @@ foreach($info['fields'] as $field):
 endforeach;
 ?>
         for($i=0; $i<$num; $i++){
-<?php $var = "$" . lcfirst($info['short_class_name']) ?>
+    <?php $var = "$" . lcfirst($info['short_class_name']) ?>
             <?= $var ?> = new <?= $info['short_class_name'] ?>();
 
 <?php
@@ -76,7 +76,8 @@ endforeach
 ?>
 
             $this->doctrine->getManager()->persist(<?= $var ?>);
-        }
+            $this->progress->advance();
+    }
 
         $this->doctrine->getManager()->flush();
     }

@@ -57,9 +57,10 @@ class <?= $class_name; ?> extends Command
 <?php endforeach; ?>
 
         //now loading ManyToMany data
-        $progress->setMessage("loading many to many datas");
+        $this->progress->setMessage("loading many to many datas");
         $this->loadManyToManyData();
 
+        $this->progress->finish("Done!");
         $this->io->success('Fixtures loaded!');
         return 0;
     }
@@ -122,6 +123,7 @@ $alreadyLoaded = [];
             }
 
             $this->doctrine->getManager()->persist(<?= $var ?>);
+            $this->progress->advance();
         }
 
         $this->doctrine->getManager()->flush();
