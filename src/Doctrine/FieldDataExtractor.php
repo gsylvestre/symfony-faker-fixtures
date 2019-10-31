@@ -2,6 +2,7 @@
 
 namespace FakerFixtures\Doctrine;
 
+use Doctrine\Common\Inflector\Inflector;
 use Doctrine\Common\Persistence\Mapping\ClassMetadata;
 use FakerFixtures\Faker\MethodChooser;
 
@@ -50,6 +51,8 @@ class FieldDataExtractor
             if (DependencyGraph::isADependantAssociation($association)){
                 $field = $association;
                 $field['assocShortClassName'] = $boundClass = (new \ReflectionClass($association['targetEntity']))->getShortName();
+                $field['assocPluralName'] = Inflector::pluralize($field['assocShortClassName']);
+                $field['pivotTableName'] = !empty($field['joinTable']['name']) ? $field['joinTable']['name'] : "";
                 $field['isAssoc'] = true;
                 if ($field['type'] === DependencyGraph::ONETOONE || $field['type'] === DependencyGraph::MANYTOONE){
                     $field['setter'] = $this->guessSetterName($classMetadata->getName(), $associationName);

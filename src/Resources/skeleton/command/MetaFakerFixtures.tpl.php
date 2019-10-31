@@ -10,6 +10,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Bridge\Doctrine\RegistryInterface;
 use Symfony\Component\Console\Input\ArrayInput;
+use Symfony\Component\Console\Helper\ProgressIndicator;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 <?php foreach($class_full_infos as $classInfo): ?>
 use <?= $classInfo['full_class_name'] ?>;
@@ -22,6 +23,7 @@ class <?= $class_name; ?> extends Command
     /** @var SymfonyStyle */
     protected $io;
     protected $faker;
+    protected $progress;
     protected $doctrine;
     protected $passwordEncoder;
 
@@ -42,6 +44,10 @@ class <?= $class_name; ?> extends Command
     {
         $this->io = new SymfonyStyle($input, $output);
 
+        $this->progress = new ProgressIndicator($output);
+        $this->progress->start('Loading fixtures');
+
+        $this->progress->setMessage("Truncating tables");
         $this->truncateTables();
 
         //order might be important
@@ -51,6 +57,7 @@ class <?= $class_name; ?> extends Command
 <?php endforeach; ?>
 
         //now loading ManyToMany data
+        $progress->setMessage("loading many to many datas");
         $this->loadManyToManyData();
 
         $this->io->success('Fixtures loaded!');
@@ -78,13 +85,46 @@ class <?= $class_name; ?> extends Command
 
     protected function loadManyToManyData()
     {
+<?php
+$alreadyLoaded = [];
+?>
 <?php foreach($class_full_infos as $info): ?>
 <?php foreach($info['fields'] as $field): ?>
-<?php if (!empty($field['adder']) && $field['type'] === \FakerFixtures\Doctrine\DependencyGraph::MANYTOMANY): ?>
-        for($i=0; $i<5; $i++){
-            //<?= $field['adder'] ?>
+<?php if (!empty($field['adder']) && $field['type'] === \FakerFixtures\Doctrine\DependencyGraph::MANYTOMANY && $field['isOwningSide']): ?>
+<?php if (!in_array($field['assocShortClassName'], $alreadyLoaded)):
+    $alreadyLoaded[] = $field['assocShortClassName'];
+?>
+        $all<?= $field['assocPluralName'] ?> = $this->doctrine->getRepository(<?= $field['assocShortClassName'] ?>::class)->findAll();
+<?php
+    endif;
+    if (!in_array($info['short_class_name'], $alreadyLoaded)):
+    $alreadyLoaded[] = $info['short_class_name'];
+?>
+        $all<?= $info['plural_name'] ?> = $this->doctrine->getRepository(<?= $info['short_class_name'] ?>::class)->findAll();
+<?php endif; ?>
+<?php endif; ?>
+<?php endforeach; ?>
+<?php endforeach; ?>
 
+<?php foreach($class_full_infos as $info): ?>
+<?php foreach($info['fields'] as $field): ?>
+<?php if (!empty($field['adder']) && $field['type'] === \FakerFixtures\Doctrine\DependencyGraph::MANYTOMANY && $field['isOwningSide']): ?>
+<?php $methodName = sprintf($field['fakerMethod'], '$all'.$field['assocShortClassName'].'Entities'); ?>
+<?php $var = "$" . lcfirst($info['short_class_name']) ?>
+        //loading data in <?= $field['pivotTableName'] ?> table
+        foreach($all<?= $info['plural_name'] ?> as <?= "$" . lcfirst($info['short_class_name']) ?>){
+            $numberOf<?= $field['fieldName'] ?> = $this->faker->numberBetween($min = 1, $max = 5);
+            //reset faker uniqueness
+            $this->faker->unique(true)->randomElement([]);
+
+            for($n = 0; $n < $numberOf<?= $field['fieldName'] ?>; $n++){
+                <?= $var ?>-><?= $field['adder'] ?>( $this->faker->unique()->randomElement($all<?= $field['assocPluralName'] ?>) );
+            }
+
+            $this->doctrine->getManager()->persist(<?= $var ?>);
         }
+
+        $this->doctrine->getManager()->flush();
 
 <?php endif; ?>
 <?php endforeach; ?>

@@ -1,10 +1,11 @@
     protected function load<?= ucfirst($info['plural_name']) ?>(int $num): void
     {
+        $this->progress->setMessage("loading <?= $info['plural_name'] ?>");
 <?php
 foreach($info['fields'] as $field):
-    if ($field['isAssoc']):
+    if ($field['isAssoc'] && $field['type'] !== \FakerFixtures\Doctrine\DependencyGraph::MANYTOMANY):
 ?>
-        $all<?= $field['assocShortClassName'] ?>Entities = $this->doctrine->getRepository(<?= $field['assocShortClassName'] ?>::class)->findAll();
+        $all<?= $field['assocPluralName'] ?> = $this->doctrine->getRepository(<?= $field['assocShortClassName'] ?>::class)->findAll();
 <?php
     endif;
 endforeach;
@@ -32,22 +33,13 @@ foreach($info['fields'] as $field):
 <?php elseif(empty($field['fakerMethod'])): ?>
 <?php if ($info['security_user_class'] && $field['setter'] === "setRoles"): ?>
             //roles
-            <?= $var ?>-><?= $field['setter'] ?>(
-                [$this->faker->randomElement(["ROLE_USER", "ROLE_ADMIN"])]
-            );
+            <?= $var ?>-><?= $field['setter'] ?>( [$this->faker->randomElement(["ROLE_USER", "ROLE_ADMIN"])] );
 <?php else: ?>
             //no faker method found!
-            //<?= $var ?>-><?= $field['setter'] ?>(
-            //    $this->faker-><?= $field['fakerMethod']
-?>
-
-            //);
+            //<?= $var ?>-><?= $field['setter'] ?>( $this->faker-><?= $field['fakerMethod'] ?> );
 <?php endif; ?>
 <?php else: ?>
-            <?= $var ?>-><?= $field['setter'] ?>(
-                $this->faker-><?= $field['fakerMethod'] ?>
-
-            );
+            <?= $var ?>-><?= $field['setter'] ?>( $this->faker-><?= $field['fakerMethod'] ?> );
 <?php
             endif;
         endif;
@@ -57,7 +49,7 @@ endforeach
 <?php
 foreach($info['fields'] as $field):
     if ($field['isAssoc']):
-        $methodName = sprintf($field['fakerMethod'], '$all'.$field['assocShortClassName'].'Entities');
+        $methodName = sprintf($field['fakerMethod'], '$all'.$field['assocPluralName']);
         if (!empty($field['adder']) && $field['type'] != \FakerFixtures\Doctrine\DependencyGraph::MANYTOMANY):
 ?>
             /*
@@ -66,20 +58,12 @@ foreach($info['fields'] as $field):
             */
             //$numberOf<?= $field['fieldName'] ?> = $this->faker->numberBetween($min = 0, $max = 5);
             //for($n = 0; $n < $numberOf<?= $field['fieldName'] ?>; $n++){
-                <?= $var ?>-><?= $field['adder'] ?>(
-                    $this->faker-><?= $methodName
-?>
-
-                );
+                <?= $var ?>-><?= $field['adder'] ?>( $this->faker-><?= $methodName ?> );
             //}
 <?php
         elseif (!empty($field['setter'])):
 ?>
-            <?= $var ?>-><?= $field['setter'] ?>(
-                $this->faker-><?= $methodName
-?>
-
-            );
+            <?= $var ?>-><?= $field['setter'] ?>( $this->faker-><?= $methodName ?> );
 <?php
         elseif($field['type'] != \FakerFixtures\Doctrine\DependencyGraph::MANYTOMANY):
 ?>
@@ -95,7 +79,5 @@ endforeach
         }
 
         $this->doctrine->getManager()->flush();
-
-        $this->io->text($num . ' <?= mb_strtolower($info['plural_name']) ?> loaded!');
     }
 
