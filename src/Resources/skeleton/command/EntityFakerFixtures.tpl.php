@@ -1,11 +1,5 @@
-    protected function load<?= ucfirst($info['plural_name']) ?>(InputInterface $input, OutputInterface $output): int
+    protected function load<?= ucfirst($info['plural_name']) ?>(int $num): void
     {
-        $num = $input->getArgument('num');
-
-        $io = new SymfonyStyle($input, $output);
-
-        $this->truncateTable();
-
 <?php
 foreach($info['fields'] as $field):
     if ($field['isAssoc']):
@@ -97,11 +91,11 @@ foreach($info['fields'] as $field):
 endforeach
 ?>
 
-            $this->manager->persist(<?= $var ?>);
+            $this->doctrine->getManager()->persist(<?= $var ?>);
         }
 
-        $this->manager->flush();
-        $io->writeln($num . ' "<?= $info['short_class_name'] ?>" loaded!');
-        return 0;
+        $this->doctrine->getManager()->flush();
+
+        $this->io->text($num . ' <?= mb_strtolower($info['plural_name']) ?> loaded!');
     }
 

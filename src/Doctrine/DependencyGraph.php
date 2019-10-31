@@ -51,7 +51,6 @@ class DependencyGraph
         foreach($this->dependencyGraph as $classMeta){
             $this->order[] = $classMeta->getName();
         }
-        var_dump($this->order);
     }
 
     /**

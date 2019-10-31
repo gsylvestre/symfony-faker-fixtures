@@ -102,7 +102,7 @@ class FakerFixturesGeneratorCommand extends AbstractMaker
     public function generate(InputInterface $input, ConsoleStyle $io, Generator $generator): void
     {
         if ($input->getOption('delete-previous')){
-            $this->fileManager->deletePreviousFixtures($io);
+            $this->fileManager->deletePreviousFixture($io);
         }
 
         $fakerLocale = $input->getOption('locale');
@@ -113,7 +113,7 @@ class FakerFixturesGeneratorCommand extends AbstractMaker
         $schemaValidator = new SchemaValidator($em);
         $schemaValidationErrors = $schemaValidator->validateMapping();
         if (count($schemaValidationErrors) > 0) {
-            $io->error("You have errors in your entities! Please run 'php bin/console doctrine:schema:validate' to find/fix them first.");
+            $io->error("You have errors in your entities! Please run 'php bin/console doctrine:schema:validate' to find & fix them first.");
             die("See you later.");
         }
 
@@ -125,7 +125,7 @@ class FakerFixturesGeneratorCommand extends AbstractMaker
 
         $io->comment([
             'Next:',
-            '1. Check your new fixtures in src\\Command\\FakerFixtures',
+            '1. Check your new fixtures in src\\Command\\FakerFixturesCommand.php',
             '2. Feel free to edit them, they are yours!',
             '3. Run "php bin/console app:fixtures:load-all" to load em all'
         ]);
@@ -145,7 +145,7 @@ class FakerFixturesGeneratorCommand extends AbstractMaker
         //generated command details
         $commandName = "app:fixtures:load";
         $commandClassNameDetails = $generator->createClassNameDetails(
-            "LoadAllFixtures",
+            "FakerFixtures",
             'Command',
             'Command',
             sprintf('The "%s" command name is not valid because it would be implemented by "%s" class, which is not valid as a PHP class name (it must start with a letter or underscore, followed by any number of letters, numbers, or underscores).', $commandName, Str::asClassName($commandName, 'Command'))
@@ -191,6 +191,7 @@ class FakerFixturesGeneratorCommand extends AbstractMaker
             [
                 'command_name' => $commandName,
                 "class_full_infos" => $entitiesData,
+                'faker_locale' => $fakerLocale,
             ]
         );
 

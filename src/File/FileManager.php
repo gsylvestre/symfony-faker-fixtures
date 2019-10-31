@@ -23,8 +23,10 @@ class FileManager extends \Symfony\Bundle\MakerBundle\FileManager
      * Delete all files in FakerFixtures dir
      * @param SymfonyStyle $io
      */
-    public function deletePreviousFixtures(SymfonyStyle $io): void
+    public function deletePreviousFixture(SymfonyStyle $io): void
     {
+        $filename = "FakerFixturesCommand.php";
+
         try {
             $finder = $this->createFinder("src/Command/");
         } catch (\Exception $e){
@@ -34,25 +36,20 @@ class FileManager extends \Symfony\Bundle\MakerBundle\FileManager
             }
         }
 
-        if (!$finder->hasResults()) {
-            $io->writeln("No fixtures to remove");
+        if (!$finder->files()->name($filename)->hasResults()) {
+            $io->writeln("$filename not found. Not removing anything.");
             return;
         }
 
-        $foundFiles = $finder->files();
-        $foundFilesNames = [];
-        /** @var \Symfony\Component\Finder\SplFileInfo $file */
-        foreach($foundFiles as $file){
-            $foundFilesNames[] = $file->getFilename();
-        }
-
-        $confirmed = $io->confirm('<bg=yellow;options=bold>Are you sure you want to delete all these files?</>' . "\n" . implode("\n", $foundFilesNames) . "\n", false);
+        $confirmed = $io->confirm('<bg=yellow;options=bold>Are you sure you want to delete '.$filename.' ?</>', false);
         if (!$confirmed) {
             return;
         }
 
         $fs = new Filesystem();
+
         $fs->remove($finder);
+        $io->text($filename . " deleted!");
     }
 
 }
