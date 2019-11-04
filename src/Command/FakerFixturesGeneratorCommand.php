@@ -40,6 +40,9 @@ class FakerFixturesGeneratorCommand extends AbstractMaker
     /** @var array */
     private $commandNames = [];
 
+    /** @var ConsoleStyle */
+    private $io;
+
     //OMG i didnt do that
     /** @TODO this will break hard */
     const PATH_TO_SKELETONS = '../../../../../gsylvestre/symfony-faker-fixtures/src/Resources/skeleton/command/';
@@ -101,6 +104,8 @@ class FakerFixturesGeneratorCommand extends AbstractMaker
      */
     public function generate(InputInterface $input, ConsoleStyle $io, Generator $generator): void
     {
+        $this->io = $io;
+
         if ($input->getOption('delete-previous')){
             $this->fileManager->deletePreviousFixture($io);
         }
@@ -109,13 +114,7 @@ class FakerFixturesGeneratorCommand extends AbstractMaker
 
         $em = $this->entityHelper->getRegistry()->getManager();
 
-        //check for schema validation errors
-        $schemaValidator = new SchemaValidator($em);
-        $schemaValidationErrors = $schemaValidator->validateMapping();
-        if (count($schemaValidationErrors) > 0) {
-            $io->error("You have errors in your entities! Please run 'php bin/console doctrine:schema:validate' to find & fix them first.");
-            die("See you later.");
-        }
+        $this->validateSchema($em);
 
         $metas = $em->getMetadataFactory()->getAllMetadata();
 
@@ -129,6 +128,24 @@ class FakerFixturesGeneratorCommand extends AbstractMaker
             '2. Feel free to edit them, they are yours!',
             '3. Run "php bin/console app:fixtures:load-all" to load em all'
         ]);
+    }
+
+    private function validateSchema($em)
+    {
+        //check for schema validation errors
+        $schemaValidator = new SchemaValidator($em);
+        $schemaValidationErrors = $schemaValidator->validateMapping();
+        if (count($schemaValidationErrors) > 0) {
+            $this->io->error("You have errors in your entities! Please run 'php bin/console doctrine:schema:validate' to find & fix them first.");
+            die("See you later.");
+        }
+
+        //check for database synchronicity errors
+        $schemaIsInSync = $schemaValidator->schemaInSyncWithMetadata();
+        if (!$schemaIsInSync) {
+            $this->io->error("You database is not in sync with your entities! Please run your latest migrations or run 'php bin/console doctrine:schema:update --force'");
+            die("See you later.");
+        }
     }
 
     /**
