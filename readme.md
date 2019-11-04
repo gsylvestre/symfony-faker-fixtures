@@ -9,7 +9,6 @@ Huge thanks to the wonderfull [Faker library](https://github.com/fzaninotto/Fake
 - Faker method selection based on entities attributes
 - Handling of ManyToMany, ManyToOne, OneToMany and OneToOne association
 - Fixtures order based on association dependencies
-- Generation of standalone commands for each of your entities
 
 Main requirements
 ============
@@ -17,7 +16,7 @@ If you are using the _symfony/website-skeleton_, you are good to go.
 Else:
 - [Symfony Framework](https://github.com/symfony/symfony) >= 3.4
 - [Doctrine ORM](https://github.com/doctrine/orm) >= 2.3
-- [Symfony Maker Bundle](https://github.com/symfony/maker-bundle)
+- [Symfony Maker Bundle](https://github.com/symfony/maker-bundle) >= 1.13
 
 Installation
 ============
@@ -35,28 +34,28 @@ How to use
    ```console
    $ php bin/console make:faker-fixtures
    ```
-   This will generate your new fixtures commands in `src\Command\FakerFixtures\`.
+   This will generate your new fixture command in `src\Command\`.
 
-2. Run the meta fixture command with:
+2. Run the fixture command with:
    ```console
-   $ php bin/console app:fixtures:load-all
+   $ php bin/console app:fixtures:load
    ```
    This will load magic datas in your database.
 
 ### Editing the fixtures
 This bundle generates fixtures for you. Once done, you are free to edit them.
 
-If needed (and it should), edit the generated commands: 
+If needed (and it should), edit the generated `FakerFixturesCommand.php`: 
 
-1. `LoadAllFixturesCommand.php` to adapt the number of entities to generate or the order
-2. All other fixtures files to adapt the Faker methods used and/or the logic
+1. To adapt the number of entities to generate, or the order
+2. To adapt the Faker methods used and/or the logic
 
 ### Start over?
 If you ever need to regenerates all your fixtures, you can do so by running: 
 ```console
 $ php bin/console make:faker-fixtures --delete-previous
 ```
-Be aware that *you will lose all changes* made to your fixtures commands!
+Be aware that *you will lose all changes* made to your fixtures command!
 
 ### Localize faker datas?
 If you want your generated datas localized, run: 
@@ -64,15 +63,6 @@ If you want your generated datas localized, run:
 $ php bin/console make:faker-fixtures --locale=fr_FR
 ```
 
-
-### Running only one fixture?
-Each entity fixture is a unique command that you can run with:
-```console
-$ php bin/console app:fixtures:entityName 50
-```
-Replace *entityName* with your entity name, and 50 with the number of rows to create.
-
-You can always find the command to run in each fixture file.
 
 Installation without Symfony Flex
 ----------------------------------------

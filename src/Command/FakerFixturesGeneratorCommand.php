@@ -124,9 +124,9 @@ class FakerFixturesGeneratorCommand extends AbstractMaker
 
         $io->comment([
             'Next:',
-            '1. Check your new fixtures in src\\Command\\FakerFixturesCommand.php',
+            '1. Check your new fixtures Command in src\\Command\\FakerFixturesCommand.php',
             '2. Feel free to edit them, they are yours!',
-            '3. Run "php bin/console app:fixtures:load-all" to load em all'
+            '3. Run "php bin/console app:fixtures:load" to load em all'
         ]);
     }
 
