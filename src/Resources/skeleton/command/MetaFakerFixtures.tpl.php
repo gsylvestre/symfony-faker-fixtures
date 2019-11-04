@@ -47,7 +47,7 @@ class <?= $class_name; ?> extends Command
         $this->progress = new ProgressIndicator($output);
         $this->progress->start('Loading fixtures');
 
-        $this->progress->setMessage("Truncating tables");
+        //empty all tables, reset ids
         $this->truncateTables();
 
         //order might be important
@@ -71,17 +71,27 @@ class <?= $class_name; ?> extends Command
 
     protected function truncateTables()
     {
-        $connection = $this->doctrine->getConnection();
-        $connection->query("SET FOREIGN_KEY_CHECKS = 0");
+        $this->progress->setMessage("Truncating tables");
+
+        try {
+            $connection = $this->doctrine->getConnection();
+            $connection->beginTransaction();
+            $connection->query("SET FOREIGN_KEY_CHECKS = 0");
 
 <?php foreach($class_full_infos as $info): ?>
-        $connection->query("TRUNCATE <?= $info['table_name'] ?>");
+            $connection->query("TRUNCATE <?= $info['table_name'] ?>");
 <?php foreach($info['pivot_table_names'] as $pivot_table_name): ?>
-        $connection->query("TRUNCATE <?= $pivot_table_name ?>");
+            $connection->query("TRUNCATE <?= $pivot_table_name ?>");
 <?php endforeach; ?>
 <?php endforeach; ?>
 
-        $connection->query("SET FOREIGN_KEY_CHECKS = 1");
+            $connection->query("SET FOREIGN_KEY_CHECKS = 1");
+            $connection->commit();
+        }
+        catch (Exception $e) {
+            $connection->rollBack();
+            throw $e;
+        }
     }
 
     protected function loadManyToManyData()
