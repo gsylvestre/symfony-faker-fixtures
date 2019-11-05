@@ -1,22 +1,14 @@
 # Faker Fixtures Maker for Symfony
 
-This bundle allows fast generation of realistic fake datas for your database, in the `make` style that we love.  
-Huge thanks to the wonderfull [Faker library](https://github.com/fzaninotto/Faker/).
+This bundle allows fast generation of realistic fake datas for your database, in the `make` style that we love. Huge thanks to the wonderfull [Faker library](https://github.com/fzaninotto/Faker/).
 
 ### Main features
 
 - Quick and easy to use
 - Faker method selection based on entities attributes
-- Handling of ManyToMany, ManyToOne, OneToMany and OneToOne association
+- Handling of ManyToMany, ManyToOne, OneToMany and OneToOne associations
 - Fixtures order based on association dependencies
 
-Main requirements
-============
-If you are using the _symfony/website-skeleton_, you are good to go.  
-Else:
-- [Symfony Framework](https://github.com/symfony/symfony) >= 3.4
-- [Doctrine ORM](https://github.com/doctrine/orm) >= 2.3
-- [Symfony Maker Bundle](https://github.com/symfony/maker-bundle) >= 1.13
 
 Installation
 ============
@@ -27,6 +19,7 @@ Open a command console, enter your project directory and execute:
 $ composer require gsylvestre/symfony-faker-fixtures
 ```
 
+---
 
 How to use
 ============
@@ -41,6 +34,7 @@ How to use
    $ php bin/console app:fixtures:load
    ```
    This will load magic datas in your database.
+
 
 ### Editing the fixtures
 This bundle generates fixtures for you. Once done, you are free to edit them.
