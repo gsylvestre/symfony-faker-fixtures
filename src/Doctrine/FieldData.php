@@ -19,10 +19,8 @@ class FieldData
 
     protected $isUnique = false;
     protected $isNullable = false;
-
     protected $scale;
     protected $precision;
-
     protected $length;
 
     protected $fakerMethod;
@@ -35,6 +33,10 @@ class FieldData
         $this->setType($fieldMapping['type']);
         $this->setIsUnique($fieldMapping['unique']);
         $this->setIsNullable($fieldMapping['nullable']);
+
+        $this->setScale($fieldMapping['scale']);
+        $this->setPrecision($fieldMapping['precision']);
+        $this->setLength($fieldMapping['length']);
 
         $this->setSetter($this->guessSetterName());
         $this->setGetter($this->guessGetterName());
