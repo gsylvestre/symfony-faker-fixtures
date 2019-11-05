@@ -4,6 +4,7 @@ namespace FakerFixtures\Faker;
 
 use Faker\Factory;
 use FakerFixtures\Doctrine\DependencyGraph;
+use FakerFixtures\Doctrine\FieldData;
 
 /**
  *
@@ -36,53 +37,53 @@ class MethodChooser
      *
      * Choose faker method based on field type
      *
-     * @param array $fieldMetaData
+     * @param FieldData $fieldData
      * @return string|null
      */
-    public function choose(array $fieldMetaData): ?string
+    public function choose(FieldData $fieldData): ?string
     {
         $method = null;
-        switch($fieldMetaData['type']){
+        switch($fieldData->getType()){
             case 'string':
-                $method = $this->chooseString($fieldMetaData);
+                $method = $this->chooseString($fieldData);
                 break;
             case 'text':
-                $method = $this->chooseText($fieldMetaData);
+                $method = $this->chooseText($fieldData);
                 break;
             case 'datetime':
-                $method = $this->chooseDate($fieldMetaData);
+                $method = $this->chooseDate($fieldData);
                 break;
             case 'date':
-                $method = $this->chooseDate($fieldMetaData);
+                $method = $this->chooseDate($fieldData);
                 break;
             case 'boolean':
                 $method = 'boolean($chanceOfGettingTrue = 50)';
                 break;
             case 'integer':
-                $method = $this->chooseInteger($fieldMetaData);
+                $method = $this->chooseInteger($fieldData);
                 break;
             case 'float':
             case 'decimal':
-                $method = $this->chooseFloat($fieldMetaData);
+                $method = $this->chooseFloat($fieldData);
                 break;
         }
 
-        if ($fieldMetaData['isAssoc']){
+        if ($fieldData->getisAssoc()){
             $method = "randomElement(%s)";
-            if($fieldMetaData['type'] === DependencyGraph::ONETOONE || $fieldMetaData['type'] === DependencyGraph::MANYTOMANY) {
+            if($fieldData->getType() === DependencyGraph::ONETOONE || $fieldData->getType() === DependencyGraph::MANYTOMANY) {
                 $method = "unique()->$method";
             }
-            if(!empty($fieldMetaData['joinColumns'][0]['nullable'])){
+            if(!empty($fieldData->getJoinColumns()[0]['nullable'])){
                 $method = 'optional($chancesOfValue = 0.5, $default = null)->' . $method;
             }
         }
 
         //add unique and optional modifier
         elseif ($method) {
-            if ($fieldMetaData['unique']){
+            if ($fieldData->getisUnique()){
                 $method = "unique()->$method";
             }
-            if ($fieldMetaData['nullable']) {
+            if ($fieldData->getisNullable()) {
                 $method = 'optional($chancesOfValue = 0.5, $default = null)->' . $method;
             }
         }
@@ -94,25 +95,25 @@ class MethodChooser
      *
      * Double faker methods and props
      *
-     * @param array $fieldMetaData
+     * @param FieldData $fieldData
      * @return string
      */
-    public function chooseFloat(array $fieldMetaData): string
+    public function chooseFloat(FieldData $fieldData): string
     {
-        $nbMaxDecimals = ($fieldMetaData['scale']) ? $fieldMetaData['scale'] : "NULL";
-        $max = ($fieldMetaData['precision']) ? str_repeat('9', $fieldMetaData['precision']) : "NULL";
+        $nbMaxDecimals = ($fieldData->getScale()) ? $fieldData->getScale() : "NULL";
+        $max = ($fieldData->getPrecision()) ? str_repeat('9', $fieldData->getPrecision()) : "NULL";
         return 'randomFloat($nbMaxDecimals = '.$nbMaxDecimals.', $min = 0, $max = '.$max.')';
     }
 
     /**
      * Integer faker methods and props
      *
-     * @param array $fieldMetaData
+     * @param FieldData $fieldData
      * @return string
      */
-    public function chooseInteger(array $fieldMetaData): string
+    public function chooseInteger(FieldData $fieldData): string
     {
-        if (strpos(mb_strtolower($fieldMetaData['fieldName']), "year") !== false){
+        if (strpos(mb_strtolower($fieldData->getFieldName()), "year") !== false){
             return 'year($max = "now")';
         }
 
@@ -122,10 +123,10 @@ class MethodChooser
     /**
      * Dates faker methods and props
      *
-     * @param array $fieldMetaData
+     * @param FieldData $fieldData
      * @return string
      */
-    public function chooseDate(array $fieldMetaData): string
+    public function chooseDate(FieldData $fieldData): string
     {
         return 'dateTimeBetween($startDate = "- 3 months", $endDate = "now")';
     }
@@ -133,10 +134,10 @@ class MethodChooser
     /**
      * Text faker methods and props
      *
-     * @param array $fieldMetaData
+     * @param FieldData $fieldData
      * @return string
      */
-    public function chooseText(array $fieldMetaData): string
+    public function chooseText(FieldData $fieldData): string
     {
         return 'paragraphs($nb = $this->faker->randomDigit, $asText = true)';
     }
@@ -144,19 +145,19 @@ class MethodChooser
     /**
      * String faker methods and props
      *
-     * @param array $fieldMetaData
+     * @param FieldData $fieldData
      * @return string
      */
-    public function chooseString(array $fieldMetaData): string
+    public function chooseString(FieldData $fieldData): string
     {
-        $fieldName = mb_strtolower($fieldMetaData['fieldName']);
-        $entityName = $fieldMetaData['entityName'];
+        $fieldName = mb_strtolower($fieldData->getFieldName());
+        $entityName = $fieldData->getEntityFullClassName();
 
         //powerful AI at work here lol
 
         //when length is not specified in meta data
-        if (empty($fieldMetaData['length'])){
-            $fieldMetaData['length'] = 255;
+        if (empty($fieldData->getLength())){
+            $fieldData->setLength(255);
         }
 
         if (FakerMethodAliases::match($fieldName, 'currencyCode')){
@@ -165,10 +166,10 @@ class MethodChooser
         if (FakerMethodAliases::match($fieldName, 'postcode')){
             return 'postcode';
         }
-        if($fieldMetaData['length'] <= 5){
+        if($fieldData->getLength() <= 5){
             return 'randomLetter';
         }
-        if($fieldMetaData['length'] <= 9){
+        if($fieldData->getLength() <= 9){
             return 'word';
         }
         if (FakerMethodAliases::match($fieldName, 'email')){
@@ -189,7 +190,7 @@ class MethodChooser
         if (FakerMethodAliases::match($fieldName, 'countryCode')){
             return 'countryCode';
         }
-        if ($fieldMetaData['entityName'] === 'country' && $fieldName === 'code'){
+        if ($fieldData->getEntityFullClassName() === 'country' && $fieldName === 'code'){
             return 'countryCode';
         }
         if (FakerMethodAliases::match($fieldName, 'firstName')){
@@ -202,10 +203,10 @@ class MethodChooser
             return $fieldName . '()';
         }
         if (in_array($fieldName, $this->fakerProperties)){
-            return $fieldMetaData['fieldName'];
+            return $fieldData->getFieldName();
         }
 
-        return "text({$fieldMetaData['length']})";
+        return "text({$fieldData->getLength()})";
     }
 
     /**

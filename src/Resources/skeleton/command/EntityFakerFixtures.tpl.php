@@ -1,24 +1,26 @@
-    protected function load<?= ucfirst($info['plural_name']) ?>(int $num): void
+    protected function load<?= ucfirst($class_data->getShortPluralClassName()) ?>(int $num): void
     {
-        $this->progress->setMessage("loading <?= mb_strtolower($info['plural_name']) ?>");
+        $this->progress->setMessage("loading <?= mb_strtolower($class_data->getShortPluralClassName()) ?>");
 <?php
-foreach($info['fields'] as $field):
-    if ($field['isAssoc'] && $field['type'] !== \FakerFixtures\Doctrine\DependencyGraph::MANYTOMANY):
+foreach($class_data->getFields() as $field):
+    if ($field->getisAssoc() &&
+        $field->getType() !== \FakerFixtures\Doctrine\DependencyGraph::MANYTOMANY &&
+        $field->getisOwningSide()):
 ?>
-        $all<?= $field['assocPluralName'] ?> = $this->doctrine->getRepository(<?= $field['assocShortClassName'] ?>::class)->findAll();
+        $all<?= $field->getAssociatedShortPluralClassName() ?> = $this->doctrine->getRepository(<?= $field->getAssociatedShortClassName() ?>::class)->findAll();
 <?php
     endif;
 endforeach;
 ?>
         for($i=0; $i<$num; $i++){
-    <?php $var = "$" . lcfirst($info['short_class_name']) ?>
-            <?= $var ?> = new <?= $info['short_class_name'] ?>();
+<?php $var = "$" . lcfirst($class_data->getShortClassName()) ?>
+            <?= $var ?> = new <?= $class_data->getShortClassName() ?>();
 
 <?php
-foreach($info['fields'] as $field):
-    if (!$field['isAssoc']):
-        if ($field['fieldName'] != "id"):
-            if (!empty($field['isSecurityPasswordField'])):
+foreach($class_data->getFields() as $field):
+    if (!$field->getisAssoc()):
+        if ($field->getFieldName() != "id"):
+            if (!empty($field->getisSecurityPasswordField())):
 ?>
             //password
             $plainPassword = "ryanryan";
@@ -27,19 +29,19 @@ foreach($info['fields'] as $field):
 <?php continue; ?>
 <?php endif; ?>
 <?php
-            if ($field['setter'] === null):
+            if ($field->getSetter() === null):
 ?>
-            //no setter found for <?= $field['fieldName'] ?>
-<?php elseif(empty($field['fakerMethod'])): ?>
-<?php if ($info['security_user_class'] && $field['setter'] === "setRoles"): ?>
+            //no setter found for <?= $field->getFieldName() ?>
+<?php elseif(empty($field->getFakerMethod())): ?>
+<?php if ($class_data->getSecurityUserClass() && $field->getSetter() === "setRoles"): ?>
             //roles
-            <?= $var ?>-><?= $field['setter'] ?>( [$this->faker->randomElement(["ROLE_USER", "ROLE_ADMIN"])] );
+            <?= $var ?>-><?= $field->getSetter() ?>( [$this->faker->randomElement(["ROLE_USER", "ROLE_ADMIN"])] );
 <?php else: ?>
             //no faker method found!
-            //<?= $var ?>-><?= $field['setter'] ?>( $this->faker-><?= $field['fakerMethod'] ?> );
+            //<?= $var ?>-><?= $field->getSetter() ?>( $this->faker-><?= $field->getFakerMethod() ?> );
 <?php endif; ?>
 <?php else: ?>
-            <?= $var ?>-><?= $field['setter'] ?>( $this->faker-><?= $field['fakerMethod'] ?> );
+            <?= $var ?>-><?= $field->getSetter() ?>( $this->faker-><?= $field->getFakerMethod() ?> );
 <?php
             endif;
         endif;
@@ -47,27 +49,27 @@ foreach($info['fields'] as $field):
 endforeach
 ?>
 <?php
-foreach($info['fields'] as $field):
-    if ($field['isAssoc']):
-        $methodName = sprintf($field['fakerMethod'], '$all'.$field['assocPluralName']);
-        if (!empty($field['adder']) && $field['type'] != \FakerFixtures\Doctrine\DependencyGraph::MANYTOMANY):
+foreach($class_data->getFields() as $field):
+    if ($field->getisAssoc() && $field->getisOwningSide()):
+        $methodName = sprintf($field->getFakerMethod(), '$all'.$field->getAssociatedShortPluralClassName());
+        if (!empty($field->getAdder()) && $field->getType() != \FakerFixtures\Doctrine\DependencyGraph::MANYTOMANY):
 ?>
             /*
             uncomment below to add more than one
-            (you might need to increase the total number of <?= $field['fieldName'] ?> to load in LoadAllFixturesCommand.php
+            (you might need to increase the total number of <?= $field->getFieldName() ?> to load in LoadAllFixturesCommand.php
             */
-            //$numberOf<?= $field['fieldName'] ?> = $this->faker->numberBetween($min = 0, $max = 5);
-            //for($n = 0; $n < $numberOf<?= $field['fieldName'] ?>; $n++){
-                <?= $var ?>-><?= $field['adder'] ?>( $this->faker-><?= $methodName ?> );
+            //$numberOf<?= $field->getFieldName() ?> = $this->faker->numberBetween($min = 0, $max = 5);
+            //for($n = 0; $n < $numberOf<?= $field->getFieldName() ?>; $n++){
+                <?= $var ?>-><?= $field->getAdder() ?>( $this->faker-><?= $methodName ?> );
             //}
 <?php
-        elseif (!empty($field['setter'])):
+        elseif (!empty($field->getSetter())):
 ?>
-            <?= $var ?>-><?= $field['setter'] ?>( $this->faker-><?= $methodName ?> );
+            <?= $var ?>-><?= $field->getSetter() ?>( $this->faker-><?= $methodName ?> );
 <?php
-        elseif($field['type'] != \FakerFixtures\Doctrine\DependencyGraph::MANYTOMANY):
+        elseif($field->getType() != \FakerFixtures\Doctrine\DependencyGraph::MANYTOMANY):
 ?>
-            //oups no method for <?= $field['fieldName'] . "\n" ?>
+            //oups no method for <?= $field->getFieldName() . "\n" ?>
             //<?= $var ?>...
 <?php
         endif;

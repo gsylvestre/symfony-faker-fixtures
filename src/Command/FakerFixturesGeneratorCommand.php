@@ -186,20 +186,9 @@ class FakerFixturesGeneratorCommand extends AbstractMaker
                 $securityUserClass = $this->userClassHelper->getUserClassInfos();
             }
 
-            $shortClassName = (new \ReflectionClass($classMetaData->getName()))->getShortName();
+            $classData = $fieldDataExtractor->getFieldsData($classMetaData, $securityUserClass);
 
-            $data = [
-                'short_class_name' => $shortClassName,
-                'full_class_name' => $classMetaData->getName(),
-                'table_name' => $classMetaData->getTableName(),
-                'pivot_table_names' => AssociationHelper::getPivotTableNames($classMetaData),
-                'fields' => $fieldDataExtractor->getFieldsData($classMetaData, $securityUserClass),
-                'faker_locale' => $fakerLocale,
-                "security_user_class" => $securityUserClass,
-                "plural_name" => $inflector->pluralize($shortClassName)
-            ];
-
-            $entitiesData[] = $data;
+            $entitiesData[] = $classData;
         }
 
         $generator->generateClass(
@@ -207,7 +196,8 @@ class FakerFixturesGeneratorCommand extends AbstractMaker
             self::PATH_TO_SKELETONS . 'MetaFakerFixtures.tpl.php',
             [
                 'command_name' => $commandName,
-                "class_full_infos" => $entitiesData,
+                'command_class_name' => 'FakerFixturesCommand',
+                "class_datas" => $entitiesData,
                 'faker_locale' => $fakerLocale,
             ]
         );
