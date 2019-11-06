@@ -10,6 +10,7 @@ class FieldData
     protected $type;
     protected $fieldName;
     protected $entityFullClassName;
+    protected $entityShortClassName;
 
     protected $setter;
     protected $getter;
@@ -30,6 +31,7 @@ class FieldData
     {
         $this->setFieldName($fieldName);
         $this->setEntityFullClassName($classMetaData->getName());
+        $this->setEntityShortClassName($classMetaData->getReflectionClass()->getShortName());
         $this->setType($fieldMapping['type']);
         $this->setIsUnique($fieldMapping['unique']);
         $this->setIsNullable($fieldMapping['nullable']);
@@ -116,6 +118,24 @@ class FieldData
     {
         $this->entityFullClassName = $entityFullClassName;
     }
+
+    /**
+     * @return mixed
+     */
+    public function getEntityShortClassName()
+    {
+        return $this->entityShortClassName;
+    }
+
+    /**
+     * @param mixed $entityShortClassName
+     */
+    public function setEntityShortClassName($entityShortClassName): void
+    {
+        $this->entityShortClassName = $entityShortClassName;
+    }
+
+
 
     /**
      * @return mixed

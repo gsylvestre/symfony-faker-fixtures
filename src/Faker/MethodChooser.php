@@ -139,6 +139,9 @@ class MethodChooser
      */
     public function chooseText(FieldData $fieldData): string
     {
+        if (FakerAliases::matchField($fieldData->getFieldName(), 'url')){
+            return 'url';
+        }
         return 'paragraphs($nb = $this->faker->randomDigit, $asText = true)';
     }
 
@@ -151,53 +154,64 @@ class MethodChooser
     public function chooseString(FieldData $fieldData): string
     {
         $fieldName = mb_strtolower($fieldData->getFieldName());
-        $entityName = $fieldData->getEntityFullClassName();
+        $entityName = mb_strtolower($fieldData->getEntityShortClassName());
 
         //powerful AI at work here lol
 
         //when length is not specified in meta data
-        if (empty($fieldData->getLength())){
-            $fieldData->setLength(255);
-        }
+        $length = empty($fieldData->getLength()) ? 255 : $fieldData->getLength();
 
-        if (FakerMethodAliases::match($fieldName, 'currencyCode')){
+        if (FakerAliases::matchField($fieldName, 'currencyCode')){
             return 'currencyCode';
         }
-        if (FakerMethodAliases::match($fieldName, 'postcode')){
+        if (FakerAliases::matchField($fieldName, 'postcode')){
             return 'postcode';
         }
-        if($fieldData->getLength() <= 5){
+        if (FakerAliases::matchField($fieldName, 'countryCode')){
+            return 'countryCode';
+        }
+
+        if (FakerAliases::matchEntity($entityName, 'country')
+            && FakerAliases::matchField($fieldName, 'code')){
+            return 'countryCode';
+        }
+
+        if (FakerAliases::matchField($fieldName, 'title')){
+            return 'sentence($nbWords = $this->faker->randomDigit, $variableNbWords = false)';
+        }
+
+        if($length <= 5){
             return 'randomLetter';
         }
-        if($fieldData->getLength() <= 9){
+        if($length <= 9){
             return 'word';
         }
-        if (FakerMethodAliases::match($fieldName, 'email')){
+        if (FakerAliases::matchField($fieldName, 'email')){
             return 'email';
         }
-        if (FakerMethodAliases::match($fieldName, 'firstName')){
+        if (FakerAliases::matchField($fieldName, 'firstName')){
             return 'firstName';
         }
-        if (FakerMethodAliases::match($fieldName, 'lastName')){
+        if (FakerAliases::matchField($fieldName, 'lastName')){
             return 'lastName';
         }
         if ($entityName === 'user' && $fieldName === 'name'){
             return 'lastName';
         }
-        if (FakerMethodAliases::match($fieldName, 'userName')){
+        if (FakerAliases::matchField($fieldName, 'userName')){
             return 'userName';
         }
-        if (FakerMethodAliases::match($fieldName, 'countryCode')){
-            return 'countryCode';
-        }
-        if ($fieldData->getEntityFullClassName() === 'country' && $fieldName === 'code'){
-            return 'countryCode';
-        }
-        if (FakerMethodAliases::match($fieldName, 'firstName')){
+        if (FakerAliases::matchField($fieldName, 'firstName')){
             return 'firstName';
         }
-        if (FakerMethodAliases::match($fieldName, 'streetAddress')){
+        if (FakerAliases::matchField($fieldName, 'streetAddress')){
             return 'streetAddress';
+        }
+        if (FakerAliases::matchField($fieldName, 'ipv4')){
+            return 'ipv4';
+        }
+        if (FakerAliases::matchField($fieldName, 'url')){
+            return 'url';
         }
         if (in_array($fieldName, $this->fakerMethods)){
             return $fieldName . '()';
@@ -206,7 +220,7 @@ class MethodChooser
             return $fieldData->getFieldName();
         }
 
-        return "text({$fieldData->getLength()})";
+        return "text($length)";
     }
 
     /**
