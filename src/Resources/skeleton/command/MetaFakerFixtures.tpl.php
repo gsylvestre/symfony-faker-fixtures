@@ -50,6 +50,12 @@ class <?= $command_class_name; ?> extends Command
     {
         $this->io = new SymfonyStyle($input, $output);
 
+        $confirmed = $this->io->confirm('This will delete all your database datas. Continue?', false);
+        if (!$confirmed){
+            $this->io->text("Ok then.");
+            return 0;
+        }
+
         $this->progress = new ProgressIndicator($output);
         $this->progress->start('Loading fixtures');
 
