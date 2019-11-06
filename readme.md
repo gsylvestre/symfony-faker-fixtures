@@ -4,9 +4,9 @@ This bundle allows fast generation of realistic fake datas for your database, in
 
 ### Main features
 
-- Quick and easy to use
+- Zero config, easy to use
 - Faker method selection based on entities attributes
-- Handling of ManyToMany, ManyToOne, OneToMany and OneToOne associations
+- Handling of associations
 - Fixtures order based on association dependencies
 
 
@@ -19,22 +19,20 @@ Open a command console, enter your project directory and execute:
 $ composer require gsylvestre/symfony-faker-fixtures
 ```
 
----
 
 How to use
 ============
-1. Execute the following command:
+1. Generate your new fixture command with:
    ```console
    $ php bin/console make:faker-fixtures
    ```
-   This will generate your new fixture command in `src\Command\`.
 
-2. Run the fixture command with:
+2. Load magic datas in your database with:
    ```console
    $ php bin/console app:fixtures:load
-   ```
-   This will load magic datas in your database.
-
+   ```  
+  
+---
 
 ### Editing the fixtures
 This bundle generates fixtures for you. Once done, you are free to edit them.
@@ -55,8 +53,10 @@ Be aware that *you will lose all changes* made to your fixtures command!
 If you want your generated datas localized, run: 
 ```console
 $ php bin/console make:faker-fixtures --locale=fr_FR
-```
+```  
+  
 
+  ---  
 
 Installation without Symfony Flex
 ----------------------------------------
