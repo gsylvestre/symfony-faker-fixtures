@@ -156,24 +156,14 @@ class MethodChooser
         $fieldName = mb_strtolower($fieldData->getFieldName());
         $entityName = mb_strtolower($fieldData->getEntityShortClassName());
 
-        //powerful AI at work here lol
-
         //when length is not specified in meta data
         $length = empty($fieldData->getLength()) ? 255 : $fieldData->getLength();
 
-        if (FakerAliases::matchField($fieldName, 'currencyCode')){
-            return 'currencyCode';
-        }
-        if (FakerAliases::matchField($fieldName, 'postcode')){
-            return 'postcode';
-        }
-        if (FakerAliases::matchField($fieldName, 'countryCode')){
-            return 'countryCode';
-        }
-
-        if (FakerAliases::matchEntity($entityName, 'country')
-            && FakerAliases::matchField($fieldName, 'code')){
-            return 'countryCode';
+        //match against all aliases
+        foreach(FakerAliases::FAKER_METHOD_ALIASES as $fakerMethodName => $matchDatas){
+            if (FakerAliases::matchField($fieldName, $fakerMethodName, $entityName)){
+                return $fakerMethodName;
+            }
         }
 
         if (FakerAliases::matchField($fieldName, 'title')){
@@ -186,33 +176,7 @@ class MethodChooser
         if($length <= 9){
             return 'word';
         }
-        if (FakerAliases::matchField($fieldName, 'email')){
-            return 'email';
-        }
-        if (FakerAliases::matchField($fieldName, 'firstName')){
-            return 'firstName';
-        }
-        if (FakerAliases::matchField($fieldName, 'lastName')){
-            return 'lastName';
-        }
-        if ($entityName === 'user' && $fieldName === 'name'){
-            return 'lastName';
-        }
-        if (FakerAliases::matchField($fieldName, 'userName')){
-            return 'userName';
-        }
-        if (FakerAliases::matchField($fieldName, 'firstName')){
-            return 'firstName';
-        }
-        if (FakerAliases::matchField($fieldName, 'streetAddress')){
-            return 'streetAddress';
-        }
-        if (FakerAliases::matchField($fieldName, 'ipv4')){
-            return 'ipv4';
-        }
-        if (FakerAliases::matchField($fieldName, 'url')){
-            return 'url';
-        }
+
         if (in_array($fieldName, $this->fakerMethods)){
             return $fieldName . '()';
         }
