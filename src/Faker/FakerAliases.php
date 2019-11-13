@@ -66,7 +66,9 @@ class FakerAliases
         }
 
         //check for both entity name match AND field match first
-        if ($entityName && array_key_exists($entityName, self::FAKER_METHOD_ALIASES[$againstFakerMethod]['fieldsWithinEntity'])) {
+        if ($entityName && 
+            !empty(self::FAKER_METHOD_ALIASES[$againstFakerMethod]['fieldsWithinEntity']) &&
+            array_key_exists($entityName, self::FAKER_METHOD_ALIASES[$againstFakerMethod]['fieldsWithinEntity'])) {
             if (in_array($needle, self::FAKER_METHOD_ALIASES[$againstFakerMethod]['fieldsWithinEntity'][$entityName])) {
                 return true;
             }
