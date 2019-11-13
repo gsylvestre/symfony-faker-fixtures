@@ -45,6 +45,13 @@ class FakerAliases
         'url' => [
             'fields' => ['url', 'uri'],
         ],
+        'word' => [
+            'fields' => ['tagname', 'tag_name', 'category_name', 'categoryname'],
+            'fieldsWithinEntity' => [
+                'tag' => ['name'],
+                'category' => ['name'],
+            ]
+        ],
     ];
 
     /**
