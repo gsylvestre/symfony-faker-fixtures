@@ -142,7 +142,7 @@ class MethodChooser
         if (FakerAliases::matchField($fieldData->getFieldName(), 'url')){
             return 'url';
         }
-        return 'paragraphs($nb = $this->faker->randomDigit, $asText = true)';
+        return 'paragraphs($nb = $this->faker->randomDigitNot(0), $asText = true)';
     }
 
     /**
@@ -167,7 +167,7 @@ class MethodChooser
         }
 
         if (FakerAliases::matchField($fieldName, 'title')){
-            return 'sentence($nbWords = $this->faker->randomDigit, $variableNbWords = false)';
+            return 'sentence($nbWords = $this->faker->randomDigitNot(0), $variableNbWords = false)';
         }
 
         if($length <= 5){
