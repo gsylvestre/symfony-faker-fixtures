@@ -66,7 +66,7 @@ class FakerMethodChooserTest extends FakerFixtureTestCase
         yield ['countryCode', 'countryCode', 'string', 2, 'Country'];
         yield ['countryCode', 'code', 'string', 2, 'Country'];
         //title will return a Mr, Ms... which is not good. We want a sentence
-        yield ['sentence($nbWords = $this->faker->randomDigit, $variableNbWords = false)', 'title', 'string', 50, 'Whatever'];
+        yield ['sentence($nbWords = $this->faker->randomDigitNot(0), $variableNbWords = false)', 'title', 'string', 50, 'Whatever'];
         yield ['userName', 'username', 'string', 30, 'Whatever'];
         yield ['userName', 'userName', 'string', 30, 'Whatever'];
         yield ['userName', 'user_name', 'string', 30, 'Whatever'];

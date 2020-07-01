@@ -8,6 +8,7 @@ This bundle allows fast generation of realistic fake datas for your database, in
 - Faker method selection based on entities attributes
 - Handling of associations
 - Fixtures order based on association dependencies
+- For Symfony 4+  
 
 
 Installation

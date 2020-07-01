@@ -8,7 +8,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
-use Symfony\Bridge\Doctrine\RegistryInterface;
+use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Helper\ProgressIndicator;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
@@ -33,7 +33,7 @@ class <?= $command_class_name; ?> extends Command
     /** @var UserPasswordEncoderInterface **/
     protected $passwordEncoder;
 
-    public function __construct(RegistryInterface $doctrine, UserPasswordEncoderInterface $passwordEncoder, $name = null)
+    public function __construct(ManagerRegistry $doctrine, UserPasswordEncoderInterface $passwordEncoder, $name = null)
     {
         parent::__construct($name);
         $this->faker = \Faker\Factory::create("<?= $faker_locale ?>");

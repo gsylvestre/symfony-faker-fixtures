@@ -3,6 +3,7 @@
 namespace FakerFixtures\File;
 
 use Symfony\Bundle\MakerBundle\Util\AutoloaderUtil;
+use Symfony\Bundle\MakerBundle\Util\MakerFileLinkFormatter;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Exception\DirectoryNotFoundException;
@@ -13,9 +14,9 @@ class FileManager extends \Symfony\Bundle\MakerBundle\FileManager
     /**
      * FileManager constructor.
      */
-    public function __construct(Filesystem $fs, AutoloaderUtil $autoloaderUtil, string $rootDirectory, string $twigDefaultPath = null)
+    public function __construct(Filesystem $fs, AutoloaderUtil $autoloaderUtil, MakerFileLinkFormatter $makerFileLinkFormatter, string $rootDirectory, string $twigDefaultPath = null)
     {
-        parent::__construct($fs, $autoloaderUtil, $rootDirectory, $twigDefaultPath);
+        parent::__construct($fs, $autoloaderUtil, $makerFileLinkFormatter, $rootDirectory, $twigDefaultPath);
     }
 
 
