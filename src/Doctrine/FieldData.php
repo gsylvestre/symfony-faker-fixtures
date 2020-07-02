@@ -32,14 +32,15 @@ class FieldData
         $this->setFieldName($fieldName);
         $this->setEntityFullClassName($classMetaData->getName());
         $this->setEntityShortClassName($classMetaData->getReflectionClass()->getShortName());
-        $this->setType($fieldMapping['type']);
-        $this->setIsUnique($fieldMapping['unique']);
-        $this->setIsNullable($fieldMapping['nullable']);
+        if (is_array($fieldMapping)) {
+                $this->setType($fieldMapping['type']);
+                $this->setIsUnique($fieldMapping['unique']);
+                $this->setIsNullable($fieldMapping['nullable']);
 
-        $this->setScale($fieldMapping['scale']);
-        $this->setPrecision($fieldMapping['precision']);
-        $this->setLength($fieldMapping['length']);
-
+                $this->setScale($fieldMapping['scale']);
+                $this->setPrecision($fieldMapping['precision']);
+                $this->setLength($fieldMapping['length']);
+        }
         $this->setSetter($this->guessSetterName());
         $this->setGetter($this->guessGetterName());
         $this->setAdder($this->guessAdderName());
